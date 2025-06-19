@@ -1,0 +1,73 @@
+{{define "navbar"}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: #fc0;">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="/static?lang={{.Lang}}">
+      <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
+      Yang Tai Chi
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item my-1 my-lg-0">
+          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/static?lang={{.Lang}}" role="button">Home</a>
+        </li>
+        <li class="nav-item my-1 my-lg-0">
+          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/about?lang={{.Lang}}" role="button">About</a>
+        </li>
+        <li class="nav-item my-1 my-lg-0">
+          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/contact?lang={{.Lang}}" role="button">Contact</a>
+        </li>
+        <li class="nav-item my-1 my-lg-0">
+          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
+        </li>
+        <li class="nav-item ms-lg-2 my-1 my-lg-0">
+          <!-- Language Dropdown -->
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{if eq .Lang "en"}}<span class="fi fi-gb me-2"></span>{{else if eq .Lang "de"}}<span class="fi fi-de me-2"></span>{{else}}🌐{{end}}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="Dropdown" style="min-width: 180px;">
+              <li>
+                <a class="dropdown-item{{if eq .Lang "en"}} active{{end}}" href="?lang=en">
+                  <span class="fi fi-gb me-2"></span> English{{if eq .Lang "en"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item{{if eq .Lang "de"}} active{{end}}" href="?lang=de">
+                  <span class="fi fi-de me-2"></span> Deutsch{{if eq .Lang "de"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                </a>
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-pl me-2"></span> Polski</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-cn me-2"></span> 中文</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-jp me-2"></span> 日本語</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-fr me-2"></span> Français</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-es me-2"></span> Español</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-ru me-2"></span> Русский</a>
+              </li>
+              <li>
+                <a class="dropdown-item disabled" href="#"><span class="fi fi-pt me-2"></span> Português</a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{{end}}
