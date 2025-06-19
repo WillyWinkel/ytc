@@ -1,6 +1,5 @@
 {{template "header" .}}
-<h1>Startseite</h1>
-<p>Diese Seite beschreibt das Projekt und seine Ziele.</p>
+<h1>Termine</h1>
 
 {{if .Events}}
 <div class="container">
@@ -8,14 +7,17 @@
     <div class="col-12">
       {{range $idx, $e := .Events}}
         <div class="card mb-3">
-          <div class="card-header" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#event-desc-{{$idx}}" aria-expanded="false" aria-controls="event-desc-{{$idx}}">
+          <div class="card-header d-flex align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#event-desc-{{$idx}}" aria-expanded="false" aria-controls="event-desc-{{$idx}}">
             <h5 class="mb-0 d-inline">{{ $e.Summary }}</h5>
-            <span class="ms-2 text-muted">{{ $e.Start }} - {{ $e.End }}</span>
-            {{if $e.Duration}}<span class="ms-2 text-muted">({{ $e.Duration }})</span>{{end}}
-            {{if $e.Location}}<span class="ms-2"><strong>Ort:</strong> {{ $e.Location }}</span>{{end}}
+            <div class="ms-auto">
+              <span class="text-muted">{{ $e.Start }}</span>
+              {{if $e.Duration}}<span class="ms-2 text-muted">({{ $e.Duration }})</span>{{end}}
+            </div>
           </div>
           <div id="event-desc-{{$idx}}" class="collapse">
             <div class="card-body">
+              {{if $e.End}}<p class="card-text"><strong>Ende:</strong> {{ $e.End }}</p>{{end}}
+              {{if $e.Location}}<p class="card-text"><strong>Ort:</strong> {{ $e.Location }}</p>{{end}}
               {{if $e.Description}}<p class="card-text">{{ $e.Description }}</p>{{else}}<em>Keine Beschreibung</em>{{end}}
             </div>
           </div>

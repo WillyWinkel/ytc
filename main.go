@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	ical "github.com/arran4/golang-ical"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"time"
 )
 
 var supportedLangs = []string{"en", "de"}
@@ -28,7 +31,7 @@ type TemplateData struct {
 	Events []CalendarEvent
 }
 
-const calendarURL = "https://your-ics-url" // Replace with your actual ICS URL
+const calendarURL = "https://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfxreWnKQdW0FFtX6payfjYjJTJFZe4xHvR0bHx3C2wBYAq2682Ughg9wGEjVii8uEs" // Replace with your actual ICS URL
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
@@ -64,37 +67,128 @@ func getLang(r *http.Request) string {
 	return "de"
 }
 
+// Parses iCal datetime (e.g., 20240609T090000Z or 20240609) and returns time.Time and human-readable string
+func parseICalTimeToHuman(value string) (time.Time, string) {
+	if value == "" {
+		slog.Error("failed to parse ICal Time to Human", "value", value)
+		return time.Time{}, ""
+	}
+	layouts := []struct {
+		layout string
+		format string
+	}{
+		{"20060102T150405Z", "2.1.2006 15:04"},
+		{"20060102T150405", "2.1.2006 15:04"},
+		{"20060102", "2.1.2006"},
+	}
+	for _, l := range layouts {
+		t, err := time.Parse(l.layout, value)
+		if err == nil {
+			return t, t.Format(l.format)
+		}
+	}
+	slog.Error("failed to parse ICal Time to Human. returning fallback", "value", value)
+	return time.Time{}, value // fallback to raw if parsing fails
+}
+
+// Formats duration as "Xh Ym"
+func humanDuration(d time.Duration) string {
+	if d < 0 {
+		d = -d
+	}
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	if h > 0 && m > 0 {
+		return fmt.Sprintf("%dh %dm", h, m)
+	} else if h > 0 {
+		return fmt.Sprintf("%dh", h)
+	} else if m > 0 {
+		return fmt.Sprintf("%dm", m)
+	}
+	return "0m"
+}
+
 // Home handler: fetch calendar, parse events, pass to template
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	lang := getLang(r)
 	tmpl := templatesByLang[lang]
 
-	file, err := os.Open("static/demo.ics")
-	if err != nil {
-		slog.Error("failed to open calendar file", "err", err.Error())
-		http.Error(w, "Failed to load calendar file", http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
+	//file, err := os.Open("static/demo.ics")
+	//if err != nil {
+	//	slog.Error("failed to open calendar file", "err", err.Error())
+	//	http.Error(w, "Failed to load calendar file", http.StatusInternalServerError)
+	//	return
+	//}
+	//defer file.Close()
 
-	cal, err := ical.ParseCalendar(file)
-	// cal, err := ical.ParseCalendarFromUrl(calendarURL)
+	// cal, err := ical.ParseCalendar(file)
+	cal, err := ical.ParseCalendarFromUrl(calendarURL)
 	if err != nil {
 		slog.Error("failed to parse calendar", "err", err.Error())
 		http.Error(w, "Failed to parse calendar", http.StatusInternalServerError)
 		return
 	}
 
-	var events []CalendarEvent
+	type eventWithTime struct {
+		CalendarEvent
+		startTime time.Time
+		endTime   time.Time
+	}
+
+	var eventsWithTime []eventWithTime
+	now := time.Now()
+
 	for _, e := range cal.Events() {
-		events = append(events, CalendarEvent{
-			Summary:     e.GetProperty(ical.ComponentPropertySummary).Value,
-			Description: e.GetProperty(ical.ComponentPropertyDescription).Value,
-			Start:       e.GetProperty(ical.ComponentPropertyDtStart).Value,
-			End:         e.GetProperty(ical.ComponentPropertyDtEnd).Value,
-			Location:    e.GetProperty(ical.ComponentPropertyLocation).Value,
-			Duration:    e.GetProperty(ical.ComponentPropertyDuration).Value,
-		})
+		var startStr, endStr, summary, description, location string
+		var startTime, endTime time.Time
+
+		if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
+			startTime, startStr = parseICalTimeToHuman(prop.Value)
+		}
+		if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
+			endTime, endStr = parseICalTimeToHuman(prop.Value)
+		}
+		if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
+			summary = prop.Value
+		}
+		if prop := e.GetProperty(ical.ComponentPropertyDescription); prop != nil {
+			description = prop.Value
+		}
+		if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
+			location = prop.Value
+		}
+
+		duration := ""
+		if !startTime.IsZero() && !endTime.IsZero() {
+			duration = humanDuration(endTime.Sub(startTime))
+		}
+
+		// Only add if event is not in the past (endTime >= now)
+		if !endTime.IsZero() && endTime.After(now) {
+			eventsWithTime = append(eventsWithTime, eventWithTime{
+				CalendarEvent: CalendarEvent{
+					Summary:     summary,
+					Description: description,
+					Start:       startStr,
+					End:         endStr,
+					Location:    location,
+					Duration:    duration,
+				},
+				startTime: startTime,
+				endTime:   endTime,
+			})
+		}
+	}
+
+	// Sort by startTime ascending
+	sort.Slice(eventsWithTime, func(i, j int) bool {
+		return eventsWithTime[i].startTime.Before(eventsWithTime[j].startTime)
+	})
+
+	// Extract CalendarEvent slice
+	events := make([]CalendarEvent, 0, len(eventsWithTime))
+	for _, e := range eventsWithTime {
+		events = append(events, e.CalendarEvent)
 	}
 
 	data := TemplateData{
