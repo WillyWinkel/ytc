@@ -1,44 +1,41 @@
 {{define "navbar"}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: #fc0;">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="/static?lang={{.Lang}}">
+    <a class="navbar-brand" href="/?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
       <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
       Yang Tai Chi
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Navigation umschalten">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-lg-center">
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/static?lang={{.Lang}}" role="button">Home</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">About us</a>
         </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/about?lang={{.Lang}}" role="button">About</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Contact</a>
         </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/contact?lang={{.Lang}}" role="button">Contact</a>
-        </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
         </li>
         <li class="nav-item ms-lg-2 my-1 my-lg-0">
           <!-- Language Dropdown -->
           <div class="dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              {{if eq .Lang "en"}}<span class="fi fi-gb me-2"></span>{{else if eq .Lang "de"}}<span class="fi fi-de me-2"></span>{{else}}🌐{{end}}
+              {{if eq .Lang "de"}}<span class="fi fi-de me-2"></span>{{else if eq .Lang "en"}}<span class="fi fi-gb me-2"></span>{{else}}🌐{{end}}
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="Dropdown" style="min-width: 180px;">
               <li>
                 <a class="dropdown-item{{if eq .Lang "en"}} active{{end}}" href="?lang=en">
-                  <span class="fi fi-gb me-2"></span> English{{if eq .Lang "en"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                <span class="fi fi-gb me-2"></span> English{{if eq .Lang "en"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
                 </a>
               </li>
               <li>
                 <a class="dropdown-item{{if eq .Lang "de"}} active{{end}}" href="?lang=de">
-                  <span class="fi fi-de me-2"></span> Deutsch{{if eq .Lang "de"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                <span class="fi fi-de me-2"></span> Deutsch{{if eq .Lang "de"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
                 </a>
               </li>
               <li><hr class="dropdown-divider" /></li>
