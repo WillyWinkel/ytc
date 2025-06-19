@@ -1,6 +1,7 @@
 package main
 
 import (
+	ical "github.com/arran4/golang-ical"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -12,15 +13,27 @@ var supportedLangs = []string{"en", "de"}
 var templatesByLang map[string]*template.Template
 
 // Struct for passing data to templates
-type TemplateData struct {
-	Page string
-	Lang string
+type CalendarEvent struct {
+	Summary     string
+	Description string
+	Start       string
+	End         string
+	Location    string
+	Duration    string
 }
+
+type TemplateData struct {
+	Page   string
+	Lang   string
+	Events []CalendarEvent
+}
+
+const calendarURL = "https://your-ics-url" // Replace with your actual ICS URL
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 	loadTemplates()
-	http.HandleFunc("/", makeLangHandler("home.html"))
+	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/about", makeLangHandler("about.html"))
 	http.HandleFunc("/contact", makeLangHandler("contact.html"))
 	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
@@ -49,6 +62,52 @@ func getLang(r *http.Request) string {
 		}
 	}
 	return "de"
+}
+
+// Home handler: fetch calendar, parse events, pass to template
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	lang := getLang(r)
+	tmpl := templatesByLang[lang]
+
+	file, err := os.Open("static/demo.ics")
+	if err != nil {
+		slog.Error("failed to open calendar file", "err", err.Error())
+		http.Error(w, "Failed to load calendar file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	cal, err := ical.ParseCalendar(file)
+	// cal, err := ical.ParseCalendarFromUrl(calendarURL)
+	if err != nil {
+		slog.Error("failed to parse calendar", "err", err.Error())
+		http.Error(w, "Failed to parse calendar", http.StatusInternalServerError)
+		return
+	}
+
+	var events []CalendarEvent
+	for _, e := range cal.Events() {
+		events = append(events, CalendarEvent{
+			Summary:     e.GetProperty(ical.ComponentPropertySummary).Value,
+			Description: e.GetProperty(ical.ComponentPropertyDescription).Value,
+			Start:       e.GetProperty(ical.ComponentPropertyDtStart).Value,
+			End:         e.GetProperty(ical.ComponentPropertyDtEnd).Value,
+			Location:    e.GetProperty(ical.ComponentPropertyLocation).Value,
+			Duration:    e.GetProperty(ical.ComponentPropertyDuration).Value,
+		})
+	}
+
+	data := TemplateData{
+		Page:   "home",
+		Lang:   lang,
+		Events: events,
+	}
+	slog.Debug("renderTemplate", "lang", lang, "page", "home.html", "events", len(events))
+	err = tmpl.ExecuteTemplate(w, "home.html", data)
+	if err != nil {
+		slog.Error("failed to render template", "err", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func makeLangHandler(page string) http.HandlerFunc {
