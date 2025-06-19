@@ -1,8 +1,8 @@
 {{define "navbar"}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: #fc0;">
-  <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="/static?lang={{.Lang}}">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+    <a class="navbar-brand" href="/?lang={{.Lang}}">
       <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
       Yang Tai Chi
     </a>
@@ -12,17 +12,17 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-lg-center">
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/static?lang={{.Lang}}" role="button">Startseite</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/static?lang={{.Lang}}" role="button">Startseite</a>
         </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/about?lang={{.Lang}}" role="button">Über uns</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">Über uns</a>
         </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
         </li>
-        <li class="nav-item my-1 my-lg-0">
-          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} mx-1 w-100' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
         </li>
         <li class="nav-item ms-lg-2 my-1 my-lg-0">
           <!-- Language Dropdown -->
@@ -68,6 +68,6 @@
         </li>
       </ul>
     </div>
-  </div>
-</nav>
+    </div>
+  </nav>
 {{end}}
