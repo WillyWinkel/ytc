@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -23,15 +24,52 @@ type CalendarEvent struct {
 	End         string
 	Location    string
 	Duration    string
+	Calendar    string // Add calendar name for color/dot
 }
 
 type TemplateData struct {
-	Page   string
-	Lang   string
-	Events []CalendarEvent
+	Page          string
+	Lang          string
+	Events        []CalendarEvent
+	Calendar      string
+	Calendars     []string
+	CalColors     map[string]string
+	ActiveCals    map[string]bool
+	CalBtnClasses map[string]string
+	CalWebcalURLs map[string]string
 }
 
-const calendarURL = "https://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfxreWnKQdW0FFtX6payfjYjJTJFZe4xHvR0bHx3C2wBYAq2682Ughg9wGEjVii8uEs" // Replace with your actual ICS URL
+// Map calendar names to their ICS URLs
+var calendarURLs = map[string]string{
+	"wochenkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfxreWnKQdW0FFtX6payfjYjJTJFZe4xHvR0bHx3C2wBYAq2682Ughg9wGEjVii8uEs",
+	"sonderkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfwnZeAR3LQOhWWLb268k4gqa1jhmgoL-XsvLo6wcVXyHeG_di75FEtbP2difn6tV9Y",
+	"schnupperstunden": "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfzT5ZB2ZS9ej1khBvIrOwaOx_Yvn3-WSwh8yMj25fiiKNXTMWQ-y4HQBcjnTGJClXc",
+	"ferienkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfw0uWa7nlulHIUfnj6U_loZyYiyTZZaOUxNS2s5lrWQCZTmfIe5Zl__8qw2ZWC1-g0",
+}
+
+// Assign a color to each calendar
+var calendarColors = map[string]string{
+	"wochenkurse":      "#0d6efd", // blue
+	"sonderkurse":      "#198754", // green
+	"schnupperstunden": "#ffc107", // yellow
+	"ferienkurse":      "#dc3545", // red
+}
+
+// Assign a Bootstrap btn color class to each calendar
+var calendarBtnClasses = map[string]string{
+	"wochenkurse":      "primary",
+	"sonderkurse":      "success",
+	"schnupperstunden": "warning",
+	"ferienkurse":      "danger",
+}
+
+// Assign a webcal URL (no protocol) to each calendar for download
+var calendarWebcalURLs = map[string]string{
+	"wochenkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfxreWnKQdW0FFtX6payfjYjJTJFZe4xHvR0bHx3C2wBYAq2682Ughg9wGEjVii8uEs",
+	"sonderkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfwnZeAR3LQOhWWLb268k4gqa1jhmgoL-XsvLo6wcVXyHeG_di75FEtbP2difn6tV9Y",
+	"schnupperstunden": "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfzT5ZB2ZS9ej1khBvIrOwaOx_Yvn3-WSwh8yMj25fiiKNXTMWQ-y4HQBcjnTGJClXc",
+	"ferienkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfw0uWa7nlulHIUfnj6U_loZyYiyTZZaOUxNS2s5lrWQCZTmfIe5Zl__8qw2ZWC1-g0",
+}
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
@@ -51,9 +89,31 @@ func main() {
 
 func loadTemplates() {
 	templatesByLang = make(map[string]*template.Template)
+	funcMap := template.FuncMap{
+		"title": func(s string) string {
+			if len(s) == 0 {
+				return s
+			}
+			return string([]rune(s)[0]-32) + s[1:]
+		},
+		"dict": func(values ...interface{}) map[string]interface{} {
+			dict := make(map[string]interface{}, len(values)/2)
+			for i := 0; i < len(values)-1; i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					continue
+				}
+				dict[key] = values[i+1]
+			}
+			return dict
+		},
+		"safeURL": func(u string) template.URL { // <-- Add this function
+			return template.URL(u)
+		},
+	}
 	for _, lang := range supportedLangs {
 		pattern := filepath.Join("static", "templates", lang, "*.html")
-		templatesByLang[lang] = template.Must(template.ParseGlob(pattern))
+		templatesByLang[lang] = template.Must(template.New("").Funcs(funcMap).ParseGlob(pattern))
 	}
 }
 
@@ -91,18 +151,28 @@ func parseICalTimeToHuman(value string) (time.Time, string) {
 	return time.Time{}, value // fallback to raw if parsing fails
 }
 
-// Formats duration as "Xh Ym"
+// Formats duration as "Xd Yh Zm"
 func humanDuration(d time.Duration) string {
 	if d < 0 {
 		d = -d
 	}
-	h := int(d.Hours())
+	days := int(d.Hours()) / 24
+	h := int(d.Hours()) % 24
 	m := int(d.Minutes()) % 60
-	if h > 0 && m > 0 {
+	switch {
+	case days > 0 && h > 0 && m > 0:
+		return fmt.Sprintf("%dd %dh %dm", days, h, m)
+	case days > 0 && h > 0:
+		return fmt.Sprintf("%dd %dh", days, h)
+	case days > 0 && m > 0:
+		return fmt.Sprintf("%dd %dm", days, m)
+	case days > 0:
+		return fmt.Sprintf("%dd", days)
+	case h > 0 && m > 0:
 		return fmt.Sprintf("%dh %dm", h, m)
-	} else if h > 0 {
+	case h > 0:
 		return fmt.Sprintf("%dh", h)
-	} else if m > 0 {
+	case m > 0:
 		return fmt.Sprintf("%dm", m)
 	}
 	return "0m"
@@ -113,21 +183,25 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	lang := getLang(r)
 	tmpl := templatesByLang[lang]
 
-	//file, err := os.Open("static/demo.ics")
-	//if err != nil {
-	//	slog.Error("failed to open calendar file", "err", err.Error())
-	//	http.Error(w, "Failed to load calendar file", http.StatusInternalServerError)
-	//	return
-	//}
-	//defer file.Close()
-
-	// cal, err := ical.ParseCalendar(file)
-	cal, err := ical.ParseCalendarFromUrl(calendarURL)
-	if err != nil {
-		slog.Error("failed to parse calendar", "err", err.Error())
-		http.Error(w, "Failed to parse calendar", http.StatusInternalServerError)
-		return
+	// Parse selected calendars from query
+	calendarParam := r.URL.Query().Get("calendar")
+	var selectedCalendars []string
+	activeCals := make(map[string]bool)
+	if calendarParam != "" {
+		for _, c := range splitAndTrim(calendarParam) {
+			if _, ok := calendarURLs[c]; ok {
+				selectedCalendars = append(selectedCalendars, c)
+				activeCals[c] = true
+			}
+		}
+	} else {
+		// If nothing is selected, select all calendars
+		for cal := range calendarURLs {
+			selectedCalendars = append(selectedCalendars, cal)
+			activeCals[cal] = true
+		}
 	}
+	// No default selection if nothing is selected
 
 	type eventWithTime struct {
 		CalendarEvent
@@ -138,45 +212,55 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	var eventsWithTime []eventWithTime
 	now := time.Now()
 
-	for _, e := range cal.Events() {
-		var startStr, endStr, summary, description, location string
-		var startTime, endTime time.Time
+	for _, calName := range selectedCalendars {
+		calendarURL := calendarURLs[calName]
+		calendarURL = strings.Replace(calendarURL, "webcal://", "https://", -1)
+		cal, err := ical.ParseCalendarFromUrl(calendarURL)
+		if err != nil {
+			slog.Error("failed to parse calendar", "calendar", calName, "err", err.Error())
+			continue
+		}
+		for _, e := range cal.Events() {
+			var startStr, endStr, summary, description, location string
+			var startTime, endTime time.Time
 
-		if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
-			startTime, startStr = parseICalTimeToHuman(prop.Value)
-		}
-		if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
-			endTime, endStr = parseICalTimeToHuman(prop.Value)
-		}
-		if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
-			summary = prop.Value
-		}
-		if prop := e.GetProperty(ical.ComponentPropertyDescription); prop != nil {
-			description = prop.Value
-		}
-		if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
-			location = prop.Value
-		}
+			if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
+				startTime, startStr = parseICalTimeToHuman(prop.Value)
+			}
+			if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
+				endTime, endStr = parseICalTimeToHuman(prop.Value)
+			}
+			if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
+				summary = prop.Value
+			}
+			if prop := e.GetProperty(ical.ComponentPropertyDescription); prop != nil {
+				description = prop.Value
+			}
+			if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
+				location = prop.Value
+			}
 
-		duration := ""
-		if !startTime.IsZero() && !endTime.IsZero() {
-			duration = humanDuration(endTime.Sub(startTime))
-		}
+			duration := ""
+			if !startTime.IsZero() && !endTime.IsZero() {
+				duration = humanDuration(endTime.Sub(startTime))
+			}
 
-		// Only add if event is not in the past (endTime >= now)
-		if !endTime.IsZero() && endTime.After(now) {
-			eventsWithTime = append(eventsWithTime, eventWithTime{
-				CalendarEvent: CalendarEvent{
-					Summary:     summary,
-					Description: description,
-					Start:       startStr,
-					End:         endStr,
-					Location:    location,
-					Duration:    duration,
-				},
-				startTime: startTime,
-				endTime:   endTime,
-			})
+			// Only add if event is not in the past (endTime >= now)
+			if !endTime.IsZero() && endTime.After(now) {
+				eventsWithTime = append(eventsWithTime, eventWithTime{
+					CalendarEvent: CalendarEvent{
+						Summary:     summary,
+						Description: description,
+						Start:       startStr,
+						End:         endStr,
+						Location:    location,
+						Duration:    duration,
+						Calendar:    calName,
+					},
+					startTime: startTime,
+					endTime:   endTime,
+				})
+			}
 		}
 	}
 
@@ -192,16 +276,56 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := TemplateData{
-		Page:   "home",
-		Lang:   lang,
-		Events: events,
+		Page:          "home",
+		Lang:          lang,
+		Events:        events,
+		Calendar:      calendarParam,
+		Calendars:     []string{"wochenkurse", "sonderkurse", "schnupperstunden", "ferienkurse"},
+		CalColors:     calendarColors,
+		ActiveCals:    activeCals,
+		CalBtnClasses: calendarBtnClasses,
+		CalWebcalURLs: calendarWebcalURLs,
 	}
 	slog.Debug("renderTemplate", "lang", lang, "page", "home.html", "events", len(events))
-	err = tmpl.ExecuteTemplate(w, "home.html", data)
+	err := tmpl.ExecuteTemplate(w, "home.html", data)
 	if err != nil {
 		slog.Error("failed to render template", "err", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+// Helper: split comma-separated and trim
+func splitAndTrim(s string) []string {
+	var out []string
+	for _, part := range splitComma(s) {
+		p := trimSpace(part)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+func splitComma(s string) []string {
+	var out []string
+	start := 0
+	for i, c := range s {
+		if c == ',' {
+			out = append(out, s[start:i])
+			start = i + 1
+		}
+	}
+	out = append(out, s[start:])
+	return out
+}
+func trimSpace(s string) string {
+	i, j := 0, len(s)
+	for i < j && (s[i] == ' ' || s[i] == '\t' || s[i] == '\n') {
+		i++
+	}
+	for j > i && (s[j-1] == ' ' || s[j-1] == '\t' || s[j-1] == '\n') {
+		j--
+	}
+	return s[i:j]
 }
 
 func makeLangHandler(page string) http.HandlerFunc {
@@ -209,8 +333,9 @@ func makeLangHandler(page string) http.HandlerFunc {
 		lang := getLang(r)
 		tmpl := templatesByLang[lang]
 		data := TemplateData{
-			Page: page[:len(page)-5], // e.g., "home"
-			Lang: lang,
+			Page:          page[:len(page)-5], // e.g., "home"
+			Lang:          lang,
+			CalWebcalURLs: calendarWebcalURLs, // <-- ensure this is set for all pages
 		}
 		slog.Debug("renderTemplate", "lang", lang, "page", page)
 		err := tmpl.ExecuteTemplate(w, page, data)
