@@ -64,20 +64,27 @@ type eventWithTime struct {
 
 func Server() error {
 	loadTemplates()
-	http.HandleFunc("/", calendarHandler)
+	http.HandleFunc("/", makeLangHandler("home.html"))
 	http.HandleFunc("/home", makeLangHandler("home.html"))
 	http.HandleFunc("/about", makeLangHandler("about.html"))
-	http.HandleFunc("/contact", makeLangHandler("contact.html"))
-	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
 	http.HandleFunc("/news", makeLangHandler("news.html"))
+	http.HandleFunc("/calendar", calendarHandler)
+	http.HandleFunc("/taichi", makeLangHandler("taichi.html"))
+	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
 	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("static/images"))))
 	slog.Info("Server started at http://0.0.0.0:8080")
 	return http.ListenAndServe("0.0.0.0:8080", nil)
 }
 
+// calendarHandler handles the main calendar page, rendering events for selected calendars.
 func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	lang := getLang(r)
-	tmpl := templatesByLang[lang]
+	tmpl, ok := templatesByLang[lang]
+	if !ok {
+		slog.Error("template not found for language", "lang", lang)
+		http.Error(w, "Template not found", http.StatusInternalServerError)
+		return
+	}
 	calendarParam := r.URL.Query().Get("calendar")
 
 	selectedCalendars, activeCals := getSelectedCalendars(calendarParam)
@@ -91,6 +98,7 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getSelectedCalendars returns the selected calendar names and a map of active calendars.
 func getSelectedCalendars(calendarParam string) ([]string, map[string]bool) {
 	selectedCalendars := make([]string, 0)
 	activeCals := make(map[string]bool)
@@ -102,19 +110,23 @@ func getSelectedCalendars(calendarParam string) ([]string, map[string]bool) {
 			}
 		}
 	} else {
+		// To ensure deterministic order, sort keys
+		keys := make([]string, 0, len(calendarURLs))
 		for cal := range calendarURLs {
 			if cal == "wochenkurse" {
 				continue
 			}
-			selectedCalendars = append(selectedCalendars, cal)
+			keys = append(keys, cal)
 			activeCals[cal] = true
 		}
+		sort.Strings(keys)
+		selectedCalendars = append(selectedCalendars, keys...)
 	}
 	return selectedCalendars, activeCals
 }
 
+// fetchCalendarEvents fetches and sorts events for the selected calendars.
 func fetchCalendarEvents(selectedCalendars []string) []CalendarEvent {
-
 	var eventsWithTime []eventWithTime
 	now := time.Now()
 
@@ -134,8 +146,14 @@ func fetchCalendarEvents(selectedCalendars []string) []CalendarEvent {
 	return events
 }
 
+// fetchEventsForCalendar fetches and parses events for a single calendar.
 func fetchEventsForCalendar(calName string, now time.Time) []eventWithTime {
-	calendarURL := strings.ReplaceAll(calendarURLs[calName], "webcal://", "https://")
+	calendarURL, ok := calendarURLs[calName]
+	if !ok {
+		slog.Error("calendar not found", "calendar", calName)
+		return nil
+	}
+	calendarURL = strings.ReplaceAll(calendarURL, "webcal://", "https://")
 	cal, err := ical.ParseCalendarFromUrl(calendarURL)
 	if err != nil {
 		slog.Error("parse calendar", "calendar", calName, "err", err)
@@ -146,11 +164,7 @@ func fetchEventsForCalendar(calName string, now time.Time) []eventWithTime {
 	for _, e := range cal.Events() {
 		event, startTime, endTime := parseEvent(e, calName)
 		if !endTime.IsZero() && endTime.After(now) {
-			events = append(events, struct {
-				CalendarEvent
-				startTime time.Time
-				endTime   time.Time
-			}{
+			events = append(events, eventWithTime{
 				CalendarEvent: event,
 				startTime:     startTime,
 				endTime:       endTime,
@@ -160,6 +174,7 @@ func fetchEventsForCalendar(calName string, now time.Time) []eventWithTime {
 	return events
 }
 
+// parseEvent extracts event details from an iCal event.
 func parseEvent(e *ical.VEvent, calName string) (CalendarEvent, time.Time, time.Time) {
 	var (
 		startStr, endStr, summary, description, location string
@@ -195,6 +210,7 @@ func parseEvent(e *ical.VEvent, calName string) (CalendarEvent, time.Time, time.
 	}, startTime, endTime
 }
 
+// buildTemplateData prepares the data for template rendering.
 func buildTemplateData(lang, calendarParam string, events []CalendarEvent, activeCals map[string]bool) TemplateData {
 	return TemplateData{
 		Page:          "calendar",
@@ -209,10 +225,16 @@ func buildTemplateData(lang, calendarParam string, events []CalendarEvent, activ
 	}
 }
 
+// makeLangHandler returns an HTTP handler for static pages with language support.
 func makeLangHandler(page string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lang := getLang(r)
-		tmpl := templatesByLang[lang]
+		tmpl, ok := templatesByLang[lang]
+		if !ok {
+			slog.Error("template not found for language", "lang", lang)
+			http.Error(w, "Template not found", http.StatusInternalServerError)
+			return
+		}
 		data := TemplateData{
 			Page:          strings.TrimSuffix(page, ".html"),
 			Lang:          lang,

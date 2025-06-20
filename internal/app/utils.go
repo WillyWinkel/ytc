@@ -12,6 +12,7 @@ import (
 
 const defaultLang = "de"
 
+// loadTemplates parses templates for all supported languages and stores them in templatesByLang.
 func loadTemplates() {
 	templatesByLang = make(map[string]*template.Template)
 	funcMap := template.FuncMap{
@@ -31,10 +32,16 @@ func loadTemplates() {
 	}
 	for _, lang := range supportedLangs {
 		pattern := filepath.Join("static", "templates", lang, "*.html")
-		templatesByLang[lang] = template.Must(template.New("").Funcs(funcMap).ParseGlob(pattern))
+		tmpl, err := template.New("").Funcs(funcMap).ParseGlob(pattern)
+		if err != nil {
+			slog.Error("failed to parse templates", "lang", lang, "err", err)
+			continue
+		}
+		templatesByLang[lang] = tmpl
 	}
 }
 
+// getLang returns the requested language if supported, otherwise the default.
 func getLang(r *http.Request) string {
 	lang := r.URL.Query().Get("lang")
 	for _, l := range supportedLangs {
@@ -45,6 +52,7 @@ func getLang(r *http.Request) string {
 	return defaultLang
 }
 
+// parseICalTimeToHuman parses an iCal time string and returns the parsed time and a human-readable string.
 func parseICalTimeToHuman(value string) (time.Time, string) {
 	if value == "" {
 		slog.Error("parseICalTimeToHuman: empty value")
@@ -67,6 +75,7 @@ func parseICalTimeToHuman(value string) (time.Time, string) {
 	return time.Time{}, value
 }
 
+// humanDuration returns a human-readable duration string for a time.Duration.
 func humanDuration(d time.Duration) string {
 	if d < 0 {
 		d = -d
@@ -93,10 +102,16 @@ func humanDuration(d time.Duration) string {
 	return "0m"
 }
 
+// splitAndTrim splits a comma-separated string and trims whitespace from each part, omitting empty results.
 func splitAndTrim(s string) []string {
-	var out []string
-	for _, part := range strings.Split(s, ",") {
-		if p := strings.TrimSpace(part); p != "" {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		p := strings.TrimSpace(part)
+		if p != "" {
 			out = append(out, p)
 		}
 	}

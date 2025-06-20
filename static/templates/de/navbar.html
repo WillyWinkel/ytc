@@ -1,8 +1,7 @@
 {{define "navbar"}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
-  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ffc107;">
-    <div class="container-fluid">
-    <a class="navbar-brand" href="/home?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ffc107;">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="/home?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
       <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
       Yang Tai Chi Hamburg
     </a>
@@ -12,27 +11,57 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-lg-center">
+
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "home"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/home?lang={{.Lang}}" role="button">Home</a>
+          <a class='btn {{if eq .Page "news"}}btn-secondary{{else}}btn-outline-secondary{{end}} w-100 w-lg-auto d-flex align-items-center justify-content-center gap-2'
+             href="/news?lang={{.Lang}}" role="button">
+            <span class="d-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-newspaper me-2" viewBox="0 0 16 16" style="vertical-align:middle;">
+                <path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h11A1.5 1.5 0 0 1 14 2.5v10.528c0 .3-.05.654-.238.972h.738a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 1 1 0v9a1.5 1.5 0 0 1-1.5 1.5H1.497A1.497 1.497 0 0 1 0 13.5zM12 14c.37 0 .654-.211.853-.441.092-.106.147-.279.147-.531V2.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v11c0 .278.223.5.497.5z"/>
+                <path d="M2 3h10v2H2zm0 3h4v3H2zm0 4h4v1H2zm0 2h4v1H2zm5-6h2v1H7zm3 0h2v1h-2zM7 8h2v1H7zm3 0h2v1h-2zm-3 2h2v1H7zm3 0h2v1h-2zm-3 2h2v1H7zm3 0h2v1h-2z"/>
+              </svg>
+              <span>News</span>
+            </span>
+          </a>
         </li>
+
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "calendar"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/calendar?lang={{.Lang}}" role="button">Kalender</a>
+          <a class='btn {{if eq .Page "about"}}btn-secondary{{else}}btn-outline-secondary{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">
+            <span class="d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-universal-access" viewBox="0 0 16 16" style="vertical-align:middle;">
+              <path d="M9.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M6 5.5l-4.535-.442A.531.531 0 0 1 1.531 4H14.47a.531.531 0 0 1 .066 1.058L10 5.5V9l.452 6.42a.535.535 0 0 1-1.053.174L8.243 9.97c-.064-.252-.422-.252-.486 0l-1.156 5.624a.535.535 0 0 1-1.053-.174L6 9z"/>
+            </svg>
+              <span>Über uns</span>
+            </span>
+          </a>
         </li>
+
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "news"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/news?lang={{.Lang}}" role="button">News</a>
+          <a class='btn {{if eq .Page "calendar"}}btn-secondary{{else}}btn-outline-secondary{{end}} w-100 w-lg-auto d-flex align-items-center justify-content-center gap-2'
+             href="/calendar?lang={{.Lang}}" role="button">
+            <span class="d-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-calendar me-2" viewBox="0 0 16 16" style="vertical-align:middle;">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+              </svg>
+              <span>Kalender</span>
+            </span>
+          </a>
         </li>
+
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "about"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">Über uns</a>
+          <a class='btn {{if eq .Page "taichi"}}btn-secondary{{else}}btn-outline-secondary{{end}} w-100 w-lg-auto d-flex align-items-center justify-content-center gap-2'
+             href="/taichi?lang={{.Lang}}" role="button">
+            <span class="d-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-yin-yang me-2" viewBox="0 0 16 16" style="vertical-align:middle;">
+                <path d="M9.167 4.5a1.167 1.167 0 1 1-2.334 0 1.167 1.167 0 0 1 2.334 0"/>
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M1 8a7 7 0 0 1 7-7 3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 0 0 7 7 7 0 0 1-7-7m7 4.667a1.167 1.167 0 1 1 0-2.334 1.167 1.167 0 0 1 0 2.334"/>
+              </svg>
+              <span>Tai Chi</span>
+            </span>
+          </a>
         </li>
-        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "contact"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
-        </li>
-        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "impressum"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
-        </li>
-        <!-- Add margin-top for dropdown in collapsed navbar on mobile -->
+
         <li class="nav-item ms-lg-2 my-1 my-lg-0">
-          <!-- Language Dropdown -->
           <div class="dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               {{if eq .Lang "de"}}<span class="fi fi-de me-2"></span>{{else if eq .Lang "en"}}<span class="fi fi-gb me-2"></span>{{else}}🌐{{end}}
@@ -75,8 +104,8 @@
         </li>
       </ul>
     </div>
-    </div>
-  </nav>
+  </div>
+</nav>
 <br/>
 <style>
   @media (max-width: 991.98px) {

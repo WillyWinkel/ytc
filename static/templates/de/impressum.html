@@ -1,116 +1,110 @@
 {{template "header" .}}
-<style>
-  /* Ensure anchor targets are not hidden behind the sticky navbar */
-  @media (min-width: 768px) {
-    h1[id], h2[id], h3[id] {
-      scroll-margin-top: 120px;
-    }
-  }
-</style>
-<div class="row">
-  <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar py-4">
-    <div class="position-sticky">
-      <ul class="nav flex-column nav-pills">
-        <li class="nav-item"><a class="nav-link" href="#haftungshinweis">Haftungshinweis</a></li>
-        <li class="nav-item"><a class="nav-link" href="#datenschutzerklaerung">Datenschutzerklärung</a></li>
-        <li class="nav-item"><a class="nav-link" href="#verantwortlicher">Verantwortlicher</a></li>
-        <li class="nav-item"><a class="nav-link" href="#arten-der-daten">Arten der verarbeiteten Daten</a></li>
-        <li class="nav-item"><a class="nav-link" href="#kategorien-personen">Kategorien betroffener Personen</a></li>
-        <li class="nav-item"><a class="nav-link" href="#zweck-der-verarbeitung">Zweck der Verarbeitung</a></li>
-        <li class="nav-item"><a class="nav-link" href="#rechte-betroffene">Rechte der betroffenen Personen</a></li>
-        <li class="nav-item"><a class="nav-link" href="#widerrufsrecht">Widerrufsrecht</a></li>
-        <li class="nav-item"><a class="nav-link" href="#widerspruchsrecht">Widerspruchsrecht</a></li>
-        <li class="nav-item"><a class="nav-link" href="#cookies">Cookies</a></li>
-        <li class="nav-item"><a class="nav-link" href="#loeschung-daten">Löschung von Daten</a></li>
-        <li class="nav-item"><a class="nav-link" href="#kontaktaufnahme">Kontaktaufnahme</a></li>
-        <li class="nav-item"><a class="nav-link" href="#hosting">Hosting und E-Mail-Versand</a></li>
-        <li class="nav-item"><a class="nav-link" href="#google-analytics">Google Analytics</a></li>
-        <li class="nav-item"><a class="nav-link" href="#einbindung-dritter">Einbindung von Diensten und Inhalten Dritter</a></li>
+<div class="container py-4">
+  <div class="row">
+    <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar py-4 rounded-3 shadow-sm">
+      <div class="position-sticky">
+        <ul class="nav flex-column nav-pills">
+          <li class="nav-item"><a class="nav-link" href="#haftungshinweis">Haftungshinweis</a></li>
+          <li class="nav-item"><a class="nav-link" href="#datenschutzerklaerung">Datenschutzerklärung</a></li>
+          <li class="nav-item"><a class="nav-link" href="#verantwortlicher">Verantwortlicher</a></li>
+          <li class="nav-item"><a class="nav-link" href="#arten-der-daten">Arten der verarbeiteten Daten</a></li>
+          <li class="nav-item"><a class="nav-link" href="#kategorien-personen">Kategorien betroffener Personen</a></li>
+          <li class="nav-item"><a class="nav-link" href="#zweck-der-verarbeitung">Zweck der Verarbeitung</a></li>
+          <li class="nav-item"><a class="nav-link" href="#rechte-betroffene">Rechte der betroffenen Personen</a></li>
+          <li class="nav-item"><a class="nav-link" href="#widerrufsrecht">Widerrufsrecht</a></li>
+          <li class="nav-item"><a class="nav-link" href="#widerspruchsrecht">Widerspruchsrecht</a></li>
+          <li class="nav-item"><a class="nav-link" href="#cookies">Cookies</a></li>
+          <li class="nav-item"><a class="nav-link" href="#loeschung-daten">Löschung von Daten</a></li>
+          <li class="nav-item"><a class="nav-link" href="#kontaktaufnahme">Kontaktaufnahme</a></li>
+          <li class="nav-item"><a class="nav-link" href="#hosting">Hosting und E-Mail-Versand</a></li>
+          <li class="nav-item"><a class="nav-link" href="#google-analytics">Google Analytics</a></li>
+          <li class="nav-item"><a class="nav-link" href="#einbindung-dritter">Einbindung von Diensten und Inhalten Dritter</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="col-md-9 col-lg-10 py-4">
+      <h1 id="impressum" class="mb-4">Impressum</h1>
+      <h2 id="haftungshinweis" class="mt-4">Haftungshinweis</h2>
+      <p>
+        Auf unserer Website befinden sich Hyperlinks zu anderen Websites. Hiermit distanzieren wir uns ausdrücklich von sämtlichen Inhalten aller verlinkten fremden Seiten und machen uns diese Inhalte nicht zu eigen.
+      </p>
+      <h2 id="datenschutzerklaerung" class="mt-4">Datenschutzerklärung</h2>
+      <p>
+        Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm verbundenen Webseiten, Funktionen und Inhalte sowie externen Onlinepräsenzen, wie z.B. unser Social Media Profile auf (nachfolgend gemeinsam bezeichnet als „Onlineangebot“). Im Hinblick auf die verwendeten Begrifflichkeiten, wie z.B. „Verarbeitung“ oder „Verantwortlicher“ verweisen wir auf die Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).
+      </p>
+      <h3 id="verantwortlicher" class="mt-4">Verantwortlicher</h3>
+      <p>
+        Stephan Hagen / Yang Tai Chi Schule Hamburg<br>
+        Von-Essen-Straße 56<br>
+        D-22081 Hamburg<br>
+        E-Mailadresse: info[at]yang-taichi.com<br>
+        Link zum Impressum: http://yang-taichi.com/kontakt
+      </p>
+      <h3 id="arten-der-daten" class="mt-4">Arten der verarbeiteten Daten</h3>
+      <ul>
+        <li>Bestandsdaten (z.B., Namen, Adressen).</li>
+        <li>Kontaktdaten (z.B., E-Mail, Telefonnummern).</li>
+        <li>Inhaltsdaten (z.B., Texteingaben, Fotografien, Videos).</li>
+        <li>Nutzungsdaten (z.B., besuchte Webseiten, Interesse an Inhalten, Zugriffszeiten).</li>
+        <li>Meta-/Kommunikationsdaten (z.B., Geräte-Informationen, IP-Adressen).</li>
       </ul>
+      <h3 id="kategorien-personen" class="mt-4">Kategorien betroffener Personen</h3>
+      <p>
+        Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen wir die betroffenen Personen zusammenfassend auch als „Nutzer“).
+      </p>
+      <h3 id="zweck-der-verarbeitung" class="mt-4">Zweck der Verarbeitung</h3>
+      <ul>
+        <li>Zurverfügungstellung des Onlineangebotes, seiner Funktionen und Inhalte.</li>
+        <li>Beantwortung von Kontaktanfragen und Kommunikation mit Nutzern.</li>
+        <li>Sicherheitsmaßnahmen.</li>
+        <li>Reichweitenmessung/Marketing</li>
+      </ul>
+      <h3 id="rechte-betroffene" class="mt-4">Rechte der betroffenen Personen</h3>
+      <p>
+        Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob betreffende Daten verarbeitet werden und auf Auskunft über diese Daten sowie auf weitere Informationen und Kopie der Daten entsprechend Art. 15 DSGVO.<br>
+        Sie haben entsprechend Art. 16 DSGVO das Recht, die Vervollständigung der Sie betreffenden Daten oder die Berichtigung der Sie betreffenden unrichtigen Daten zu verlangen.<br>
+        Sie haben nach Maßgabe des Art. 17 DSGVO das Recht zu verlangen, dass betreffende Daten unverzüglich gelöscht werden, bzw. alternativ nach Maßgabe des Art. 18 DSGVO eine Einschränkung der Verarbeitung der Daten zu verlangen.<br>
+        Sie haben das Recht zu verlangen, dass die Sie betreffenden Daten, die Sie uns bereitgestellt haben nach Maßgabe des Art. 20 DSGVO zu erhalten und deren Übermittlung an andere Verantwortliche zu fordern.<br>
+        Sie haben ferner gem. Art. 77 DSGVO das Recht, eine Beschwerde bei der zuständigen Aufsichtsbehörde einzureichen.
+      </p>
+      <h3 id="widerrufsrecht" class="mt-4">Widerrufsrecht</h3>
+      <p>
+        Sie haben das Recht, erteilte Einwilligungen gem. Art. 7 Abs. 3 DSGVO mit Wirkung für die Zukunft zu widerrufen.
+      </p>
+      <h3 id="widerspruchsrecht" class="mt-4">Widerspruchsrecht</h3>
+      <p>
+        Sie können der künftigen Verarbeitung der Sie betreffenden Daten nach Maßgabe des Art. 21 DSGVO jederzeit widersprechen. Der Widerspruch kann insbesondere gegen die Verarbeitung für Zwecke der Direktwerbung erfolgen.
+      </p>
+      <h3 id="cookies" class="mt-4">Cookies</h3>
+      <p>
+        Als „Cookies“ werden kleine Dateien bezeichnet, die auf Rechnern der Nutzer gespeichert werden. Innerhalb der Cookies können unterschiedliche Angaben gespeichert werden. Ein Cookie dient primär dazu, die Angaben zu einem Nutzer (bzw. dem Gerät auf dem das Cookie gespeichert ist) während oder auch nach seinem Besuch innerhalb eines Onlineangebotes zu speichern. Weitere Informationen finden Sie in unserer Datenschutzerklärung.
+      </p>
+      <h3 id="loeschung-daten" class="mt-4">Löschung von Daten</h3>
+      <p>
+        Die von uns verarbeiteten Daten werden nach Maßgabe der Art. 17 und 18 DSGVO gelöscht oder in ihrer Verarbeitung eingeschränkt. Sofern nicht im Rahmen dieser Datenschutzerklärung ausdrücklich angegeben, werden die bei uns gespeicherten Daten gelöscht, sobald sie für ihre Zweckbestimmung nicht mehr erforderlich sind und der Löschung keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+      </p>
+      <h3 id="kontaktaufnahme" class="mt-4">Kontaktaufnahme</h3>
+      <p>
+        Bei der Kontaktaufnahme mit uns (z.B. per Kontaktformular, E-Mail, Telefon oder via sozialer Medien) werden die Angaben des Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung gem. Art. 6 Abs. 1 lit. b. (im Rahmen vertraglicher-/vorvertraglicher Beziehungen), Art. 6 Abs. 1 lit. f. (andere Anfragen) DSGVO verarbeitet.
+      </p>
+      <h3 id="hosting" class="mt-4">Hosting und E-Mail-Versand</h3>
+      <p>
+        Die von uns in Anspruch genommenen Hosting-Leistungen dienen der Zurverfügungstellung der folgenden Leistungen: Infrastruktur- und Plattformdienstleistungen, Rechenkapazität, Speicherplatz und Datenbankdienste, E-Mail-Versand, Sicherheitsleistungen sowie technische Wartungsleistungen, die wir zum Zwecke des Betriebs dieses Onlineangebotes einsetzen.
+      </p>
+      <h3 id="google-analytics" class="mt-4">Google Analytics</h3>
+      <p>
+        Wir setzen auf Grundlage unserer berechtigten Interessen (d.h. Interesse an der Analyse, Optimierung und wirtschaftlichem Betrieb unseres Onlineangebotes im Sinne des Art. 6 Abs. 1 lit. f. DSGVO) Google Analytics, einen Webanalysedienst der Google LLC („Google“) ein. Google verwendet Cookies. Die durch das Cookie erzeugten Informationen über Benutzung des Onlineangebotes durch die Nutzer werden in der Regel an einen Server von Google in den USA übertragen und dort gespeichert.
+      </p>
+      <h3 id="einbindung-dritter" class="mt-4">Einbindung von Diensten und Inhalten Dritter</h3>
+      <p>
+        Wir setzen innerhalb unseres Onlineangebotes auf Grundlage unserer berechtigten Interessen (d.h. Interesse an der Analyse, Optimierung und wirtschaftlichem Betrieb unseres Onlineangebotes im Sinne des Art. 6 Abs. 1 lit. f. DSGVO) Inhalts- oder Serviceangebote von Drittanbietern ein, um deren Inhalte und Services, wie z.B. Videos oder Schriftarten einzubinden.
+      </p>
+      <hr>
+      <p class="small text-muted">
+        Erstellt mit Datenschutz-Generator.de von RA Dr. Thomas Schwenke<br>
+        Für vollständige und aktuelle Informationen beachten Sie bitte die Originalquelle.
+      </p>
     </div>
-  </nav>
-  <div class="col-md-9 col-lg-10 py-4">
-    <h1 id="impressum" class="scroll-mt-5">Impressum</h1>
-    <h2 id="haftungshinweis" class="scroll-mt-5">Haftungshinweis</h2>
-    <p>
-      Auf unserer Website befinden sich Hyperlinks zu anderen Websites. Hiermit distanzieren wir uns ausdrücklich von sämtlichen Inhalten aller verlinkten fremden Seiten und machen uns diese Inhalte nicht zu eigen.
-    </p>
-    <h2 id="datenschutzerklaerung" class="scroll-mt-5">Datenschutzerklärung</h2>
-    <p>
-      Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm verbundenen Webseiten, Funktionen und Inhalte sowie externen Onlinepräsenzen, wie z.B. unser Social Media Profile auf (nachfolgend gemeinsam bezeichnet als „Onlineangebot“). Im Hinblick auf die verwendeten Begrifflichkeiten, wie z.B. „Verarbeitung“ oder „Verantwortlicher“ verweisen wir auf die Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).
-    </p>
-    <h3 id="verantwortlicher" class="scroll-mt-5">Verantwortlicher</h3>
-    <p>
-      Stephan Hagen / Yang Tai Chi Schule Hamburg<br>
-      Von-Essen-Straße 56<br>
-      D-22081 Hamburg<br>
-      E-Mailadresse: info[at]yang-taichi.com<br>
-      Link zum Impressum: http://yang-taichi.com/kontakt
-    </p>
-    <h3 id="arten-der-daten" class="scroll-mt-5">Arten der verarbeiteten Daten</h3>
-    <ul>
-      <li>Bestandsdaten (z.B., Namen, Adressen).</li>
-      <li>Kontaktdaten (z.B., E-Mail, Telefonnummern).</li>
-      <li>Inhaltsdaten (z.B., Texteingaben, Fotografien, Videos).</li>
-      <li>Nutzungsdaten (z.B., besuchte Webseiten, Interesse an Inhalten, Zugriffszeiten).</li>
-      <li>Meta-/Kommunikationsdaten (z.B., Geräte-Informationen, IP-Adressen).</li>
-    </ul>
-    <h3 id="kategorien-personen" class="scroll-mt-5">Kategorien betroffener Personen</h3>
-    <p>
-      Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen wir die betroffenen Personen zusammenfassend auch als „Nutzer“).
-    </p>
-    <h3 id="zweck-der-verarbeitung" class="scroll-mt-5">Zweck der Verarbeitung</h3>
-    <ul>
-      <li>Zurverfügungstellung des Onlineangebotes, seiner Funktionen und Inhalte.</li>
-      <li>Beantwortung von Kontaktanfragen und Kommunikation mit Nutzern.</li>
-      <li>Sicherheitsmaßnahmen.</li>
-      <li>Reichweitenmessung/Marketing</li>
-    </ul>
-    <h3 id="rechte-betroffene" class="scroll-mt-5">Rechte der betroffenen Personen</h3>
-    <p>
-      Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob betreffende Daten verarbeitet werden und auf Auskunft über diese Daten sowie auf weitere Informationen und Kopie der Daten entsprechend Art. 15 DSGVO.<br>
-      Sie haben entsprechend Art. 16 DSGVO das Recht, die Vervollständigung der Sie betreffenden Daten oder die Berichtigung der Sie betreffenden unrichtigen Daten zu verlangen.<br>
-      Sie haben nach Maßgabe des Art. 17 DSGVO das Recht zu verlangen, dass betreffende Daten unverzüglich gelöscht werden, bzw. alternativ nach Maßgabe des Art. 18 DSGVO eine Einschränkung der Verarbeitung der Daten zu verlangen.<br>
-      Sie haben das Recht zu verlangen, dass die Sie betreffenden Daten, die Sie uns bereitgestellt haben nach Maßgabe des Art. 20 DSGVO zu erhalten und deren Übermittlung an andere Verantwortliche zu fordern.<br>
-      Sie haben ferner gem. Art. 77 DSGVO das Recht, eine Beschwerde bei der zuständigen Aufsichtsbehörde einzureichen.
-    </p>
-    <h3 id="widerrufsrecht" class="scroll-mt-5">Widerrufsrecht</h3>
-    <p>
-      Sie haben das Recht, erteilte Einwilligungen gem. Art. 7 Abs. 3 DSGVO mit Wirkung für die Zukunft zu widerrufen.
-    </p>
-    <h3 id="widerspruchsrecht" class="scroll-mt-5">Widerspruchsrecht</h3>
-    <p>
-      Sie können der künftigen Verarbeitung der Sie betreffenden Daten nach Maßgabe des Art. 21 DSGVO jederzeit widersprechen. Der Widerspruch kann insbesondere gegen die Verarbeitung für Zwecke der Direktwerbung erfolgen.
-    </p>
-    <h3 id="cookies" class="scroll-mt-5">Cookies</h3>
-    <p>
-      Als „Cookies“ werden kleine Dateien bezeichnet, die auf Rechnern der Nutzer gespeichert werden. Innerhalb der Cookies können unterschiedliche Angaben gespeichert werden. Ein Cookie dient primär dazu, die Angaben zu einem Nutzer (bzw. dem Gerät auf dem das Cookie gespeichert ist) während oder auch nach seinem Besuch innerhalb eines Onlineangebotes zu speichern. Weitere Informationen finden Sie in unserer Datenschutzerklärung.
-    </p>
-    <h3 id="loeschung-daten" class="scroll-mt-5">Löschung von Daten</h3>
-    <p>
-      Die von uns verarbeiteten Daten werden nach Ma��gabe der Art. 17 und 18 DSGVO gelöscht oder in ihrer Verarbeitung eingeschränkt. Sofern nicht im Rahmen dieser Datenschutzerklärung ausdrücklich angegeben, werden die bei uns gespeicherten Daten gelöscht, sobald sie für ihre Zweckbestimmung nicht mehr erforderlich sind und der Löschung keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
-    </p>
-    <h3 id="kontaktaufnahme" class="scroll-mt-5">Kontaktaufnahme</h3>
-    <p>
-      Bei der Kontaktaufnahme mit uns (z.B. per Kontaktformular, E-Mail, Telefon oder via sozialer Medien) werden die Angaben des Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung gem. Art. 6 Abs. 1 lit. b. (im Rahmen vertraglicher-/vorvertraglicher Beziehungen), Art. 6 Abs. 1 lit. f. (andere Anfragen) DSGVO verarbeitet.
-    </p>
-    <h3 id="hosting" class="scroll-mt-5">Hosting und E-Mail-Versand</h3>
-    <p>
-      Die von uns in Anspruch genommenen Hosting-Leistungen dienen der Zurverfügungstellung der folgenden Leistungen: Infrastruktur- und Plattformdienstleistungen, Rechenkapazität, Speicherplatz und Datenbankdienste, E-Mail-Versand, Sicherheitsleistungen sowie technische Wartungsleistungen, die wir zum Zwecke des Betriebs dieses Onlineangebotes einsetzen.
-    </p>
-    <h3 id="google-analytics" class="scroll-mt-5">Google Analytics</h3>
-    <p>
-      Wir setzen auf Grundlage unserer berechtigten Interessen (d.h. Interesse an der Analyse, Optimierung und wirtschaftlichem Betrieb unseres Onlineangebotes im Sinne des Art. 6 Abs. 1 lit. f. DSGVO) Google Analytics, einen Webanalysedienst der Google LLC („Google“) ein. Google verwendet Cookies. Die durch das Cookie erzeugten Informationen über Benutzung des Onlineangebotes durch die Nutzer werden in der Regel an einen Server von Google in den USA übertragen und dort gespeichert.
-    </p>
-    <h3 id="einbindung-dritter" class="scroll-mt-5">Einbindung von Diensten und Inhalten Dritter</h3>
-    <p>
-      Wir setzen innerhalb unseres Onlineangebotes auf Grundlage unserer berechtigten Interessen (d.h. Interesse an der Analyse, Optimierung und wirtschaftlichem Betrieb unseres Onlineangebotes im Sinne des Art. 6 Abs. 1 lit. f. DSGVO) Inhalts- oder Serviceangebote von Drittanbietern ein, um deren Inhalte und Services, wie z.B. Videos oder Schriftarten einzubinden.
-    </p>
-    <hr>
-    <p class="small text-muted">
-      Erstellt mit Datenschutz-Generator.de von RA Dr. Thomas Schwenke<br>
-      Für vollständige und aktuelle Informationen beachten Sie bitte die Originalquelle.
-    </p>
   </div>
 </div>
 {{template "footer"}}
