@@ -77,15 +77,8 @@ jobs:
         with:
           tag_name: ${{ steps.semver.outputs.version }}
           name: Release ${{ steps.semver.outputs.version }}
+          files: ytc-server
           body: |
             Automated release for version ${{ steps.semver.outputs.version }}.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ytc-server
-          tag_name: ${{ steps.semver.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
