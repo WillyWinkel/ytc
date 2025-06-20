@@ -10,8 +10,7 @@ import (
 )
 
 // getDownloadFiles scans the downloads directory and returns a slice of DownloadFile.
-// Only files with a matching .info file are included.
-// If no .info file is found, use the filename as the description.
+// If a .info file is present, its content is used as description; otherwise, the filename is used.
 func getDownloadFiles(downloadDir string) ([]DownloadFile, error) {
 	slog.Info("Scanning downloads directory", "dir", downloadDir)
 	files, err := os.ReadDir(downloadDir)
@@ -20,7 +19,6 @@ func getDownloadFiles(downloadDir string) ([]DownloadFile, error) {
 		return nil, err
 	}
 
-	// Map base name to info file
 	infoFiles := make(map[string]string)
 	for _, file := range files {
 		if file.IsDir() {
@@ -35,34 +33,28 @@ func getDownloadFiles(downloadDir string) ([]DownloadFile, error) {
 
 	var downloads []DownloadFile
 	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if filepath.Ext(file.Name()) == ".info" {
+		if file.IsDir() || filepath.Ext(file.Name()) == ".info" {
 			continue
 		}
 		base := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
-		infoFileName, hasInfo := infoFiles[base]
-		desc := ""
-		if hasInfo {
+		desc := file.Name()
+		if infoFileName, hasInfo := infoFiles[base]; hasInfo {
 			descPath := filepath.Join(downloadDir, infoFileName)
 			if b, err := os.ReadFile(descPath); err == nil {
-				desc = string(b)
+				desc = strings.TrimSpace(string(b))
 				slog.Debug("Loaded description", "file", file.Name(), "descFile", infoFileName)
 			} else {
 				slog.Warn("Could not read description file", "descFile", infoFileName, "err", err)
-				desc = file.Name()
 			}
 		} else {
 			slog.Debug("No .info file found, using filename as description", "file", file.Name())
-			desc = file.Name()
 		}
 		downloads = append(downloads, DownloadFile{
 			Name:        file.Name(),
 			URL:         "/api/downloads/" + file.Name(),
 			Description: desc,
 		})
-		slog.Info("Prepared download file", "file", file.Name(), "descFile", infoFileName)
+		slog.Info("Prepared download file", "file", file.Name(), "description", desc)
 	}
 	slog.Info("Completed scanning downloads", "count", len(downloads))
 	return downloads, nil
@@ -77,8 +69,8 @@ func renderDownloadPage(w http.ResponseWriter, tmpl *template.Template, lang str
 		Files: files,
 	}
 	if err := tmpl.ExecuteTemplate(w, "download.html", data); err != nil {
-		slog.Error("render template", "err", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Error("Failed to render download template", "err", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
@@ -88,7 +80,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Handling download page request", "lang", lang, "remoteAddr", r.RemoteAddr)
 	tmpl, ok := templatesByLang[lang]
 	if !ok {
-		slog.Error("template not found for language", "lang", lang)
+		slog.Error("Template not found for language", "lang", lang)
 		http.Error(w, "Template not found", http.StatusInternalServerError)
 		return
 	}
