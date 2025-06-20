@@ -1,12 +1,22 @@
 package app
 
 import (
+	"embed"
 	"html/template"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 )
+
+// Embed static files
+//
+//go:embed static/images/*
+var imagesFS embed.FS
+
+//go:embed static/downloads/*
+var downloadsFS embed.FS
 
 var supportedLangs = []string{"en", "de"}
 var templatesByLang map[string]*template.Template
@@ -86,8 +96,21 @@ func Server() error {
 	http.HandleFunc("/taichi", makeLangHandler("taichi.html"))
 	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
 	http.HandleFunc("/download", downloadHandler)
-	http.Handle("/api/images/", http.StripPrefix("/api/images/", http.FileServer(http.Dir("static/images"))))
-	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.Dir("static/downloads"))))
+
+	imagesSub, err := fs.Sub(imagesFS, "static/images")
+	if err != nil {
+		slog.Error("failed to create images sub FS", "err", err)
+		return err
+	}
+	http.Handle("/api/images/", http.StripPrefix("/api/images/", http.FileServer(http.FS(imagesSub))))
+
+	downloadsSub, err := fs.Sub(downloadsFS, "static/downloads")
+	if err != nil {
+		slog.Error("failed to create downloads sub FS", "err", err)
+		return err
+	}
+	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.FS(downloadsSub))))
+
 	slog.Info("Server started at http://0.0.0.0:8080")
 	return http.ListenAndServe("0.0.0.0:8080", nil)
 }

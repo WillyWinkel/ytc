@@ -159,10 +159,10 @@ func TestNewsHandlerAndFetchNewsEvents(t *testing.T) {
 		t.Errorf("expected 200 OK or 500, got %d", resp.StatusCode)
 	}
 	// Test fetchNewsEvents returns empty on error
-	calendarURLs = map[string]string{"news": "webcal://invalid-url"}
+	newsURLs = map[string]string{"news": "webcal://invalid-url"}
 	events := fetchNewsEvents()
 	if len(events) != 0 {
-		t.Error("expected no news events on error")
+		t.Errorf("expected no news events on error, got %d", len(events))
 	}
 }
 

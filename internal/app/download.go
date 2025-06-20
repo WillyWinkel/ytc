@@ -2,18 +2,18 @@ package app
 
 import (
 	"html/template"
+	"io/fs"
 	"log/slog"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 )
 
-// getDownloadFiles scans the downloads directory and returns a slice of DownloadFile.
+// getDownloadFiles scans the embedded downloads directory and returns a slice of DownloadFile.
 // If a .info file is present, its content is used as description; otherwise, the filename is used.
 func getDownloadFiles(downloadDir string) ([]DownloadFile, error) {
 	slog.Info("Scanning downloads directory", "dir", downloadDir)
-	files, err := os.ReadDir(downloadDir)
+	files, err := fs.ReadDir(downloadsFS, downloadDir)
 	if err != nil {
 		slog.Error("Failed to read downloads directory", "dir", downloadDir, "err", err)
 		return nil, err
@@ -40,7 +40,7 @@ func getDownloadFiles(downloadDir string) ([]DownloadFile, error) {
 		desc := file.Name()
 		if infoFileName, hasInfo := infoFiles[base]; hasInfo {
 			descPath := filepath.Join(downloadDir, infoFileName)
-			if b, err := os.ReadFile(descPath); err == nil {
+			if b, err := fs.ReadFile(downloadsFS, descPath); err == nil {
 				desc = strings.TrimSpace(string(b))
 				slog.Debug("Loaded description", "file", file.Name(), "descFile", infoFileName)
 			} else {

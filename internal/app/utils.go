@@ -1,16 +1,20 @@
 package app
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log/slog"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"time"
 )
 
 const defaultLang = "de"
+
+//go:embed static/templates/*/*.html
+var templatesFS embed.FS
 
 // loadTemplates parses templates for all supported languages and stores them in templatesByLang.
 func loadTemplates() {
@@ -31,9 +35,18 @@ func loadTemplates() {
 		"safeURL": func(u string) template.URL { return template.URL(u) },
 	}
 	for _, lang := range supportedLangs {
-		pattern := filepath.Join("static", "templates", lang, "*.html")
-		tmpl, err := template.New("").Funcs(funcMap).ParseGlob(pattern)
+		pattern := "static/templates/" + lang + "/*.html"
+		files, err := fs.Glob(templatesFS, pattern)
 		if err != nil {
+			slog.Error("failed to glob templates", "lang", lang, "err", err)
+			continue
+		}
+		tmpl := template.New("").Funcs(funcMap)
+		if len(files) == 0 {
+			slog.Error("no templates found", "lang", lang)
+			continue
+		}
+		if _, err := tmpl.ParseFS(templatesFS, files...); err != nil {
 			slog.Error("failed to parse templates", "lang", lang, "err", err)
 			continue
 		}
