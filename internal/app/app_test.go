@@ -83,7 +83,6 @@ func TestGetSelectedCalendars(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got, active := getSelectedCalendars(tt.param)
-		// Sort both slices for comparison since map iteration order is random
 		sort.Strings(got)
 		sort.Strings(tt.want)
 		if !reflect.DeepEqual(got, tt.want) {
@@ -126,7 +125,6 @@ func TestParseEvent(t *testing.T) {
 }
 
 func TestFetchEventsForCalendar_Empty(t *testing.T) {
-	// Use a non-existent calendar name to trigger error handling
 	calendarURLs = map[string]string{"wochenkurse": "webcal://invalid-url"}
 	events := fetchEventsForCalendar("wochenkurse", time.Now())
 	if len(events) != 0 {
@@ -135,24 +133,52 @@ func TestFetchEventsForCalendar_Empty(t *testing.T) {
 }
 
 func TestFetchCalendarEvents_Sorting(t *testing.T) {
-	// This test checks that fetchCalendarEvents sorts events by startTime ascending.
-	// We'll create a fake calendar with two events in reverse order.
-	// Since fetchCalendarEvents calls fetchEventsForCalendar, and fetchEventsForCalendar
-	// cannot be patched, we test sorting logic by creating a local slice and sorting it.
-
-	// Create two eventWithTime with different start times
 	now := time.Now()
 	eventsWithTime := []eventWithTime{
 		{CalendarEvent: CalendarEvent{Summary: "b"}, startTime: now.Add(2 * time.Hour)},
 		{CalendarEvent: CalendarEvent{Summary: "a"}, startTime: now.Add(1 * time.Hour)},
 	}
-
-	// Sort manually as fetchCalendarEvents would do
 	sort.Slice(eventsWithTime, func(i, j int) bool {
 		return eventsWithTime[i].startTime.Before(eventsWithTime[j].startTime)
 	})
-
 	if eventsWithTime[0].Summary != "a" || eventsWithTime[1].Summary != "b" {
 		t.Error("eventWithTime sorting by startTime failed")
+	}
+}
+
+func TestNewsHandlerAndFetchNewsEvents(t *testing.T) {
+	setupTemplates()
+	supportedLangs = []string{"en"}
+	// Use a dummy calendar URL for news
+	calendarURLs = map[string]string{"news": "webcal://dummy"}
+	req := httptest.NewRequest("GET", "/news?lang=en", nil)
+	w := httptest.NewRecorder()
+	newsHandler(w, req)
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusInternalServerError {
+		t.Errorf("expected 200 OK or 500, got %d", resp.StatusCode)
+	}
+	// Test fetchNewsEvents returns empty on error
+	calendarURLs = map[string]string{"news": "webcal://invalid-url"}
+	events := fetchNewsEvents()
+	if len(events) != 0 {
+		t.Error("expected no news events on error")
+	}
+}
+
+func TestParseEventNews(t *testing.T) {
+	event := ical.NewEvent("test")
+	event.SetProperty(ical.ComponentPropertyDtStart, "20240102T150405Z")
+	event.SetProperty(ical.ComponentPropertySummary, "summary")
+	event.SetProperty(ical.ComponentPropertyDescription, "desc")
+	calEvent, start, _ := parseEventNews(event)
+	if calEvent.Summary != "summary" || calEvent.Description != "desc" {
+		t.Error("parseEventNews did not parse fields")
+	}
+	if start.IsZero() {
+		t.Error("parseEventNews did not parse start time")
+	}
+	if calEvent.Start != "2.1." {
+		t.Errorf("parseEventNews did not format date as expected, got %q", calEvent.Start)
 	}
 }

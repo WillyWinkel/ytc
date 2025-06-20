@@ -9,30 +9,34 @@
         </svg>
         News
       </h1>
+      {{if .Events}}
+      <div class="accordion mb-4" id="newsAccordion">
+        {{range $idx, $e := .Events}}
+        <div class="card mb-3 shadow-sm">
+          <div class="card-header p-0" id="heading{{$idx}}">
+            <h2 class="mb-0">
+              <button class="w-100 text-start d-flex justify-content-between align-items-center px-3 py-3 collapsed border-0 bg-transparent"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{$idx}}" aria-expanded="false" aria-controls="collapse{{$idx}}" style="box-shadow:none;">
+                <span class="text small ms-2">{{ $e.Summary }}</span>
+                <span class="text-muted small ms-2">{{ $e.Start }}</span>
+              </button>
+            </h2>
+          </div>
+          <div id="collapse{{$idx}}" class="collapse" aria-labelledby="heading{{$idx}}" data-bs-parent="#newsAccordion">
+            <div class="card-body">
+              {{if $e.Description}}
+                <p class="mb-0">{{ $e.Description }}</p>
+              {{end}}
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      {{else}}
       <div class="alert alert-info" role="alert">
-        Hier finden Sie die neuesten Informationen und Updates zur Yang Tai Chi Schule Hamburg.
+        Keine News gefunden.
       </div>
-      <div class="list-group mb-4">
-        <div class="list-group-item list-group-item-action flex-column align-items-start">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">Juni 2024</h5>
-            <small class="text-primary">Aktuell</small>
-          </div>
-          <p class="mb-1">Die Sommerkurse sind zur Anmeldung geöffnet!</p>
-        </div>
-        <div class="list-group-item list-group-item-action flex-column align-items-start">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">Mai 2024</h5>
-          </div>
-          <p class="mb-1">Neue Anfängerkurse starten bald. Details im Kalender.</p>
-        </div>
-        <div class="list-group-item list-group-item-action flex-column align-items-start">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">April 2024</h5>
-          </div>
-          <p class="mb-1">Danke für die Teilnahme am Frühlings-Workshop!</p>
-        </div>
-      </div>
+      {{end}}
     </div>
   </div>
 </div>
