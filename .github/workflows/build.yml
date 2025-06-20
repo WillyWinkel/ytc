@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@latest
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@latest
+        uses: actions/setup-go@v5
         with:
           go-version: '1.24'
 
@@ -28,7 +28,7 @@ jobs:
           go build -o ytc-server .
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v4
         with:
           name: ytc-server
           path: ytc-server
@@ -39,10 +39,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
-        uses: actions/checkout@latest
+        uses: actions/checkout@v4
 
       - name: Download build artifact
-        uses: actions/download-artifact@latest
+        uses: actions/download-artifact@v4
         with:
           name: ytc-server
 
@@ -58,7 +58,7 @@ jobs:
           bump_each_commit: true
 
       - name: Create Release
-        uses: softprops/action-gh-release@latest
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.semver.outputs.version }}
           name: Release ${{ steps.semver.outputs.version }}
@@ -68,7 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
-        uses: softprops/action-gh-release@latest
+        uses: softprops/action-gh-release@v2
         with:
           files: ytc-server
         env:
