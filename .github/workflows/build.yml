@@ -33,7 +33,7 @@ jobs:
           name: ytc-server
           path: ytc-server
 
-  release:
+  tag-and-release:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -48,6 +48,8 @@ jobs:
 
       - name: Set up Git
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git fetch --tags
 
       - name: Get next semantic version
@@ -56,6 +58,11 @@ jobs:
         with:
           tag_prefix: "v"
           bump_each_commit: true
+
+      - name: Create Git Tag
+        run: |
+          git tag ${{ steps.semver.outputs.version }}
+          git push origin ${{ steps.semver.outputs.version }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -71,5 +78,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ytc-server
+          tag_name: ${{ steps.semver.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
