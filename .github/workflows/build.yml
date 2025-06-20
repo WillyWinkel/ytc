@@ -47,14 +47,6 @@ jobs:
         run: |
           GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/WillyWinkel/ytc/internal/cmds.Version=${{ steps.semver.outputs.version }}" -o ytc-server-windows-amd64.exe .
 
-      - name: Build Windows arm64
-        run: |
-          GOOS=windows GOARCH=arm64 go build -ldflags "-X github.com/WillyWinkel/ytc/internal/cmds.Version=${{ steps.semver.outputs.version }}" -o ytc-server-windows-arm64.exe .
-
-      - name: Build macOS amd64
-        run: |
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X github.com/WillyWinkel/ytc/internal/cmds.Version=${{ steps.semver.outputs.version }}" -o ytc-server-darwin-amd64 .
-
       - name: Build macOS arm64
         run: |
           GOOS=darwin GOARCH=arm64 go build -ldflags "-X github.com/WillyWinkel/ytc/internal/cmds.Version=${{ steps.semver.outputs.version }}" -o ytc-server-darwin-arm64 .
@@ -81,8 +73,6 @@ jobs:
             ytc-server-linux-amd64
             ytc-server-linux-arm64
             ytc-server-windows-amd64.exe
-            ytc-server-windows-arm64.exe
-            ytc-server-darwin-amd64
             ytc-server-darwin-arm64
           body: |
             Automated release for version ${{ steps.semver.outputs.version }}.
