@@ -65,11 +65,11 @@ jobs:
           body: |
             Automated release for version ${{ steps.semver.outputs.version }}.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
           files: ytc-server
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
