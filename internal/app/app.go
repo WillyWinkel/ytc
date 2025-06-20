@@ -86,7 +86,7 @@ type DownloadTemplateData struct {
 	Files []DownloadFile
 }
 
-func Server(port string) error {
+func Server(port string, certFile string, keyFile string) error {
 	loadTemplates()
 	http.HandleFunc("/", makeLangHandler("home.html"))
 	http.HandleFunc("/home", makeLangHandler("home.html"))
@@ -112,8 +112,15 @@ func Server(port string) error {
 	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.FS(downloadsSub))))
 
 	addr := "0.0.0.0:" + port
-	slog.Info("Server started at http://" + addr)
-	return http.ListenAndServe(addr, nil)
+
+	if certFile != "" && keyFile != "" {
+		slog.Info("Starting HTTPS server at https://" + addr)
+		return http.ListenAndServeTLS(addr, certFile, keyFile, nil)
+	} else {
+		slog.Warn("SSL certificate or key not provided, falling back to HTTP", "addr", addr)
+		slog.Info("Server started at http://" + addr)
+		return http.ListenAndServe(addr, nil)
+	}
 }
 
 func makeLangHandler(page string) http.HandlerFunc {

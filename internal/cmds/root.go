@@ -21,6 +21,8 @@ import (
 var (
 	port        string
 	logfile     string
+	certFile    string
+	keyFile     string
 	Version     = "dev"
 	showVersion bool
 )
@@ -37,7 +39,7 @@ func (p *program) Start(s service.Service) error {
 	go func() {
 		utils.SetupLogging(logfile)
 		go periodicUpdateCheck()
-		err := app.Server(port)
+		err := app.Server(port, certFile, keyFile)
 		if err != nil {
 			slog.Error("failed to run server", "err", err.Error())
 			os.Exit(1)
@@ -56,8 +58,15 @@ var rootCmd = &cobra.Command{
 			os.Exit(0)
 		}
 		utils.SetupLogging(logfile)
+		slog.Info("Starting ytc-server",
+			"version", Version,
+			"port", port,
+			"logfile", logfile,
+			"certFile", certFile,
+			"keyFile", keyFile,
+		)
 		go periodicUpdateCheck()
-		err := app.Server(port)
+		err := app.Server(port, certFile, keyFile)
 		if err != nil {
 			slog.Error("failed to run server", "err", err.Error())
 			os.Exit(1)
@@ -68,11 +77,14 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.Flags().StringVarP(&port, "port", "p", "80", "Port to run the server on")
 	rootCmd.Flags().StringVar(&logfile, "logfile", "", "Log file path pattern (enables file logging with rotation)")
+	rootCmd.Flags().StringVar(&certFile, "cert", "", "Path to SSL certificate file (enables HTTPS)")
+	rootCmd.Flags().StringVar(&keyFile, "key", "", "Path to SSL key file (enables HTTPS)")
 	rootCmd.Flags().BoolVar(&showVersion, "version", false, "Show version and exit")
 
 	rootCmd.AddCommand(installCmd())
 	rootCmd.AddCommand(updateCmd())
 
+	slog.Info("ytc-server CLI started", "args", os.Args)
 	if err := rootCmd.Execute(); err != nil {
 		slog.Error("command execution failed", "err", err.Error())
 		os.Exit(1)
@@ -84,33 +96,50 @@ func installCmd() *cobra.Command {
 		Use:   "install",
 		Short: "Install ytc-server as a system service",
 		Run: func(cmd *cobra.Command, args []string) {
+			utils.SetupLogging(logfile)
+			slog.Info("Installing ytc-server as a service",
+				"port", port,
+				"logfile", logfile,
+				"certFile", certFile,
+				"keyFile", keyFile,
+			)
 			exePath, err := os.Executable()
 			if err != nil {
+				slog.Error("Could not determine executable path", "err", err)
 				fmt.Println("Could not determine executable path:", err)
 				os.Exit(1)
+			}
+			argsList := []string{"--port", port, "--logfile", logfile}
+			if certFile != "" && keyFile != "" {
+				argsList = append(argsList, "--cert", certFile, "--key", keyFile)
 			}
 			svcConfig := &service.Config{
 				Name:        "ytc-server",
 				DisplayName: "YTC Server",
 				Description: "YTC Server Service",
-				Arguments:   []string{"--port", port, "--logfile", logfile},
+				Arguments:   argsList,
 				Executable:  exePath,
 			}
 			prg := &program{}
 			s, err := service.New(prg, svcConfig)
 			if err != nil {
+				slog.Error("Failed to create service", "err", err)
 				fmt.Println("Failed to create service:", err)
 				os.Exit(1)
 			}
 			if err := s.Install(); err != nil {
+				slog.Error("Failed to install service", "err", err)
 				fmt.Println("Failed to install service:", err)
 				os.Exit(1)
 			}
+			slog.Info("Service installed successfully")
 			fmt.Println("Service installed successfully.")
 			if err := s.Start(); err != nil {
+				slog.Error("Failed to start service", "err", err)
 				fmt.Println("Failed to start service:", err)
 				os.Exit(1)
 			}
+			slog.Info("Service started")
 			fmt.Println("Service started.")
 		},
 	}
@@ -121,10 +150,14 @@ func updateCmd() *cobra.Command {
 		Use:   "update",
 		Short: "Update ytc-server to the latest release from GitHub",
 		Run: func(cmd *cobra.Command, args []string) {
+			utils.SetupLogging(logfile)
+			slog.Info("Checking for update", "current_version", Version)
 			if err := updateSelf(); err != nil {
+				slog.Error("Update failed", "err", err)
 				fmt.Println("Update failed:", err)
 				os.Exit(1)
 			}
+			slog.Info("Update successful")
 			fmt.Println("Update successful.")
 		},
 	}
@@ -132,9 +165,13 @@ func updateCmd() *cobra.Command {
 
 func periodicUpdateCheck() {
 	for {
+		slog.Info("Periodic update check started", "interval", checkInterval.String())
 		time.Sleep(checkInterval)
+		slog.Info("Checking for update (periodic)", "current_version", Version)
 		if err := updateSelf(); err != nil {
 			slog.Error("Periodic update failed", "err", err)
+		} else {
+			slog.Info("Periodic update check completed")
 		}
 	}
 }
@@ -142,30 +179,36 @@ func periodicUpdateCheck() {
 func updateSelf() error {
 	latest, url, err := getLatestRelease()
 	if err != nil {
+		slog.Error("Failed to get latest release", "err", err)
 		return err
 	}
 	current := getCurrentVersion()
+	slog.Info("Comparing versions", "current", current, "latest", latest)
 	if latest == "" || latest == current {
+		slog.Info("No update needed", "current", current, "latest", latest)
 		return nil
 	}
-	slog.Info("Updating to new version", "version", latest)
+	slog.Info("Updating to new version", "version", latest, "download_url", url)
 	tmpFile := filepath.Join(os.TempDir(), "ytc-server-update")
 	if err := downloadFile(url, tmpFile); err != nil {
+		slog.Error("Failed to download update", "err", err)
 		return err
 	}
 	oldPath, err := backupCurrentBinary()
 	if err != nil {
+		slog.Error("Failed to backup current binary", "err", err)
 		return err
 	}
 	exePath, _ := os.Executable()
 	f, err := os.Open(tmpFile)
 	if err != nil {
+		slog.Error("Failed to open downloaded update", "err", err)
 		return err
 	}
 	defer f.Close()
 	err = update.Apply(f, update.Options{})
 	if err != nil {
-		// rollback
+		slog.Error("Update apply failed, rolling back", "err", err)
 		_ = restoreBackupBinary(oldPath, exePath)
 		return fmt.Errorf("update failed, rolled back: %w", err)
 	}
