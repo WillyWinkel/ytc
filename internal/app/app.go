@@ -56,6 +56,12 @@ type TemplateData struct {
 	CalWebcalURLs map[string]string
 }
 
+type eventWithTime struct {
+	CalendarEvent
+	startTime time.Time
+	endTime   time.Time
+}
+
 func Server() error {
 	loadTemplates()
 	http.HandleFunc("/", calendarHandler)
@@ -73,6 +79,19 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	lang := getLang(r)
 	tmpl := templatesByLang[lang]
 	calendarParam := r.URL.Query().Get("calendar")
+
+	selectedCalendars, activeCals := getSelectedCalendars(calendarParam)
+	events := fetchCalendarEvents(selectedCalendars)
+
+	data := buildTemplateData(lang, calendarParam, events, activeCals)
+	slog.Debug("renderTemplate", "lang", lang, "page", "calendar.html", "events", len(events))
+	if err := tmpl.ExecuteTemplate(w, "calendar.html", data); err != nil {
+		slog.Error("render template", "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func getSelectedCalendars(calendarParam string) ([]string, map[string]bool) {
 	selectedCalendars := make([]string, 0)
 	activeCals := make(map[string]bool)
 	if calendarParam != "" {
@@ -91,63 +110,17 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 			activeCals[cal] = true
 		}
 	}
+	return selectedCalendars, activeCals
+}
 
-	type eventWithTime struct {
-		CalendarEvent
-		startTime time.Time
-		endTime   time.Time
-	}
+func fetchCalendarEvents(selectedCalendars []string) []CalendarEvent {
 
 	var eventsWithTime []eventWithTime
 	now := time.Now()
 
 	for _, calName := range selectedCalendars {
-		calendarURL := strings.ReplaceAll(calendarURLs[calName], "webcal://", "https://")
-		cal, err := ical.ParseCalendarFromUrl(calendarURL)
-		if err != nil {
-			slog.Error("parse calendar", "calendar", calName, "err", err)
-			continue
-		}
-		for _, e := range cal.Events() {
-			var (
-				startStr, endStr, summary, description, location string
-				startTime, endTime                               time.Time
-			)
-			if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
-				startTime, startStr = parseICalTimeToHuman(prop.Value)
-			}
-			if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
-				endTime, endStr = parseICalTimeToHuman(prop.Value)
-			}
-			if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
-				summary = prop.Value
-			}
-			if prop := e.GetProperty(ical.ComponentPropertyDescription); prop != nil {
-				description = prop.Value
-			}
-			if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
-				location = prop.Value
-			}
-			duration := ""
-			if !startTime.IsZero() && !endTime.IsZero() {
-				duration = humanDuration(endTime.Sub(startTime))
-			}
-			if !endTime.IsZero() && endTime.After(now) {
-				eventsWithTime = append(eventsWithTime, eventWithTime{
-					CalendarEvent: CalendarEvent{
-						Summary:     summary,
-						Description: description,
-						Start:       startStr,
-						End:         endStr,
-						Location:    location,
-						Duration:    duration,
-						Calendar:    calName,
-					},
-					startTime: startTime,
-					endTime:   endTime,
-				})
-			}
-		}
+		calendarEvents := fetchEventsForCalendar(calName, now)
+		eventsWithTime = append(eventsWithTime, calendarEvents...)
 	}
 
 	sort.Slice(eventsWithTime, func(i, j int) bool {
@@ -158,8 +131,72 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	for i, e := range eventsWithTime {
 		events[i] = e.CalendarEvent
 	}
+	return events
+}
 
-	data := TemplateData{
+func fetchEventsForCalendar(calName string, now time.Time) []eventWithTime {
+	calendarURL := strings.ReplaceAll(calendarURLs[calName], "webcal://", "https://")
+	cal, err := ical.ParseCalendarFromUrl(calendarURL)
+	if err != nil {
+		slog.Error("parse calendar", "calendar", calName, "err", err)
+		return nil
+	}
+	var events []eventWithTime
+
+	for _, e := range cal.Events() {
+		event, startTime, endTime := parseEvent(e, calName)
+		if !endTime.IsZero() && endTime.After(now) {
+			events = append(events, struct {
+				CalendarEvent
+				startTime time.Time
+				endTime   time.Time
+			}{
+				CalendarEvent: event,
+				startTime:     startTime,
+				endTime:       endTime,
+			})
+		}
+	}
+	return events
+}
+
+func parseEvent(e *ical.VEvent, calName string) (CalendarEvent, time.Time, time.Time) {
+	var (
+		startStr, endStr, summary, description, location string
+		startTime, endTime                               time.Time
+	)
+	if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
+		startTime, startStr = parseICalTimeToHuman(prop.Value)
+	}
+	if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
+		endTime, endStr = parseICalTimeToHuman(prop.Value)
+	}
+	if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
+		summary = prop.Value
+	}
+	if prop := e.GetProperty(ical.ComponentPropertyDescription); prop != nil {
+		description = prop.Value
+	}
+	if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
+		location = prop.Value
+	}
+	duration := ""
+	if !startTime.IsZero() && !endTime.IsZero() {
+		duration = humanDuration(endTime.Sub(startTime))
+	}
+	return CalendarEvent{
+		Summary:     summary,
+		Description: description,
+		Start:       startStr,
+		End:         endStr,
+		Location:    location,
+		Duration:    duration,
+		Calendar:    calName,
+	}, startTime, endTime
+}
+
+func buildTemplateData(lang, calendarParam string, events []CalendarEvent, activeCals map[string]bool) TemplateData {
+	return TemplateData{
 		Page:          "calendar",
 		Lang:          lang,
 		Events:        events,
@@ -169,11 +206,6 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 		ActiveCals:    activeCals,
 		CalBtnClasses: calendarBtnClasses,
 		CalWebcalURLs: calendarURLs,
-	}
-	slog.Debug("renderTemplate", "lang", lang, "page", "calendar.html", "events", len(events))
-	if err := tmpl.ExecuteTemplate(w, "calendar.html", data); err != nil {
-		slog.Error("render template", "err", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
