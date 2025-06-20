@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/WillyWinkel/ytc/internal/utils"
 )
 
 // calendarHandler handles the main calendar page, rendering events for selected calendars.
@@ -50,7 +52,7 @@ func getSelectedCalendars(calendarParam string) ([]string, map[string]bool) {
 	selectedCalendars := make([]string, 0)
 	activeCals := make(map[string]bool)
 	if calendarParam != "" {
-		for _, c := range splitAndTrim(calendarParam) {
+		for _, c := range utils.SplitAndTrim(calendarParam) {
 			if _, ok := calendarURLs[c]; ok {
 				selectedCalendars = append(selectedCalendars, c)
 				activeCals[c] = true
@@ -127,10 +129,10 @@ func parseEvent(e *ical.VEvent, calName string) (CalendarEvent, time.Time, time.
 		startTime, endTime                               time.Time
 	)
 	if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
-		startTime, startStr = parseICalTimeToHuman(prop.Value)
+		startTime, startStr = utils.ParseICalTimeToHuman(prop.Value)
 	}
 	if prop := e.GetProperty(ical.ComponentPropertyDtEnd); prop != nil {
-		endTime, endStr = parseICalTimeToHuman(prop.Value)
+		endTime, endStr = utils.ParseICalTimeToHuman(prop.Value)
 	}
 	if prop := e.GetProperty(ical.ComponentPropertySummary); prop != nil {
 		summary = prop.Value
@@ -143,7 +145,7 @@ func parseEvent(e *ical.VEvent, calName string) (CalendarEvent, time.Time, time.
 	}
 	duration := ""
 	if !startTime.IsZero() && !endTime.IsZero() {
-		duration = humanDuration(endTime.Sub(startTime))
+		duration = utils.HumanDuration(endTime.Sub(startTime))
 	}
 	return CalendarEvent{
 		Summary:     summary,

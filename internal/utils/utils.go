@@ -52,3 +52,18 @@ func HumanDuration(d time.Duration) string {
 func plural(val int, suffix string) string {
 	return fmt.Sprintf("%d%s", val, suffix)
 }
+
+// ParseICalTimeToHuman parses an iCal time string and returns the parsed time and a human-readable string.
+func ParseICalTimeToHuman(value string) (time.Time, string) {
+	layouts := []string{
+		"20060102T150405Z",
+		"20060102T150405",
+		"20060102",
+	}
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, value); err == nil {
+			return t, t.Format("02.01.2006 15:04")
+		}
+	}
+	return time.Time{}, value
+}

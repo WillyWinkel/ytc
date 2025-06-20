@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/WillyWinkel/ytc/internal/utils"
 )
 
 func newsHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +69,7 @@ func parseEventNews(e *ical.VEvent) (CalendarEvent, time.Time, time.Time) {
 		startTime                      time.Time
 	)
 	if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
-		t, _ := parseICalTimeToHuman(prop.Value)
+		t, _ := utils.ParseICalTimeToHuman(prop.Value)
 		startTime = t
 		if !t.IsZero() {
 			startStr = t.Format("2.1.")
