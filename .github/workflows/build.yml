@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-test-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -26,31 +26,29 @@ jobs:
         run: |
           go test -v ./...
 
-      - name: Build
+      - name: Build Linux amd64
         run: |
-          go build -o ytc-server .
+          GOOS=linux GOARCH=amd64 go build -o ytc-server-linux-amd64 .
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ytc-server
-          path: ytc-server
+      - name: Build Linux arm64
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o ytc-server-linux-arm64 .
 
+      - name: Build Windows amd64
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o ytc-server-windows-amd64.exe .
 
-  tag-and-release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Build Windows arm64
+        run: |
+          GOOS=windows GOARCH=arm64 go build -o ytc-server-windows-arm64.exe .
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ytc-server
+      - name: Build macOS amd64
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o ytc-server-darwin-amd64 .
+
+      - name: Build macOS arm64
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -o ytc-server-darwin-arm64 .
 
       - name: Set up Git
         run: |
@@ -73,11 +71,17 @@ jobs:
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} ${{ steps.semver.outputs.version }}
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.3.2
         with:
           tag_name: ${{ steps.semver.outputs.version }}
           name: Release ${{ steps.semver.outputs.version }}
-          files: ytc-server
+          files: |
+            ytc-server-linux-amd64
+            ytc-server-linux-arm64
+            ytc-server-windows-amd64.exe
+            ytc-server-windows-arm64.exe
+            ytc-server-darwin-amd64
+            ytc-server-darwin-arm64
           body: |
             Automated release for version ${{ steps.semver.outputs.version }}.
         env:
