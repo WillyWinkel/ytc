@@ -1,6 +1,6 @@
 {{define "navbar"}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ffc107;">
     <div class="container-fluid">
     <a class="navbar-brand" href="/home?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
       <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
@@ -13,17 +13,24 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-lg-center">
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/home?lang={{.Lang}}" role="button">Kalender</a>
+          <a class='btn {{if eq .Page "home"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/home?lang={{.Lang}}" role="button">Home</a>
         </li>
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">Über uns</a>
+          <a class='btn {{if eq .Page "calendar"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/calendar?lang={{.Lang}}" role="button">Kalender</a>
         </li>
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
+          <a class='btn {{if eq .Page "news"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/news?lang={{.Lang}}" role="button">News</a>
         </li>
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
+          <a class='btn {{if eq .Page "about"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">Über uns</a>
         </li>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "contact"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
+        </li>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "impressum"}}btn-danger{{else}}btn-outline-danger{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
+        </li>
+        <!-- Add margin-top for dropdown in collapsed navbar on mobile -->
         <li class="nav-item ms-lg-2 my-1 my-lg-0">
           <!-- Language Dropdown -->
           <div class="dropdown">
@@ -70,4 +77,12 @@
     </div>
     </div>
   </nav>
+<br/>
+<style>
+  @media (max-width: 991.98px) {
+    #navbarNav.show .dropdown {
+      margin-top: 1rem !important;
+    }
+  }
+</style>
 {{end}}

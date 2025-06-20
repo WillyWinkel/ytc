@@ -1,22 +1,25 @@
 {{define "navbar"}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.1/css/flag-icons.min.css" />
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+    <a class="navbar-brand" href="/home?lang={{.Lang}}" style="background-color: #dc3545; border-radius: 0.25rem; padding-right: 0.75rem;">
       <img src="/images/bg-taichichuan.png" alt="Tai Chi Symbol" width="32" height="32" class="me-2" style="object-fit:contain;">
-      Yang Tai Chi
+      Yang Tai Chi Hamburg
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Navigation umschalten">
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Navigation umschalten">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-lg-center">
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">About us</a>
+          <a class='btn {{if eq .Page "home"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/home?lang={{.Lang}}" role="button">Kalender</a>
         </li>
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
-          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Contact</a>
+          <a class='btn {{if eq .Page "about"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/about?lang={{.Lang}}" role="button">Über uns</a>
+        </li>
+        <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
+          <a class='btn {{if eq .Page "contact"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/contact?lang={{.Lang}}" role="button">Kontakt</a>
         </li>
         <li class="nav-item mb-2 mb-lg-0 my-lg-0 mx-lg-2">
           <a class='btn {{if eq .Page "impressum"}}btn-warning{{else}}btn-outline-warning{{end}} w-100 w-lg-auto' href="/impressum?lang={{.Lang}}" role="button">Impressum</a>
@@ -30,12 +33,12 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="Dropdown" style="min-width: 180px;">
               <li>
                 <a class="dropdown-item{{if eq .Lang "en"}} active{{end}}" href="?lang=en">
-                <span class="fi fi-gb me-2"></span> English{{if eq .Lang "en"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                  <span class="fi fi-gb me-2"></span> English{{if eq .Lang "en"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
                 </a>
               </li>
               <li>
                 <a class="dropdown-item{{if eq .Lang "de"}} active{{end}}" href="?lang=de">
-                <span class="fi fi-de me-2"></span> Deutsch{{if eq .Lang "de"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
+                  <span class="fi fi-de me-2"></span> Deutsch{{if eq .Lang "de"}} <i class="fa fa-check text-success ms-2"></i>{{end}}
                 </a>
               </li>
               <li><hr class="dropdown-divider" /></li>
@@ -65,6 +68,7 @@
         </li>
       </ul>
     </div>
-  </div>
-</nav>
+    </div>
+  </nav>
+<br/>
 {{end}}
