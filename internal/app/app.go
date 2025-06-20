@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/WillyWinkel/ytc/internal/utils"
 )
 
 // Embed static files
@@ -86,7 +88,20 @@ type DownloadTemplateData struct {
 	Files []DownloadFile
 }
 
-func Server(port string, certFile string, keyFile string) error {
+func Server(port string, sslPort string, certFile string, keyFile string, domain string, email string) error {
+	// If domain is set and cert/key do not exist, obtain them using utils
+	if domain != "" && email != "" && (certFile == "" || keyFile == "" || !utils.FileExists(certFile) || !utils.FileExists(keyFile)) {
+		slog.Info("No SSL certificate found, attempting to obtain one with lego", "domain", domain)
+		certFile = "cert.pem"
+		keyFile = "key.pem"
+		err := utils.ObtainCertWithLego(domain, email, certFile, keyFile)
+		if err != nil {
+			slog.Error("Failed to obtain SSL certificate with lego", "err", err)
+			return err
+		}
+		slog.Info("Successfully obtained SSL certificate with lego", "certFile", certFile, "keyFile", keyFile)
+	}
+
 	loadTemplates()
 	http.HandleFunc("/", makeLangHandler("home.html"))
 	http.HandleFunc("/home", makeLangHandler("home.html"))
@@ -111,16 +126,20 @@ func Server(port string, certFile string, keyFile string) error {
 	}
 	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.FS(downloadsSub))))
 
-	addr := "0.0.0.0:" + port
+	httpAddr := "0.0.0.0:" + port
+	httpsAddr := "0.0.0.0:" + sslPort
 
-	if certFile != "" && keyFile != "" {
-		slog.Info("Starting HTTPS server at https://" + addr)
-		return http.ListenAndServeTLS(addr, certFile, keyFile, nil)
-	} else {
-		slog.Warn("SSL certificate or key not provided, falling back to HTTP", "addr", addr)
-		slog.Info("Server started at http://" + addr)
-		return http.ListenAndServe(addr, nil)
+	if certFile != "" && keyFile != "" && utils.FileExists(certFile) && utils.FileExists(keyFile) {
+		slog.Info("Starting HTTPS server at https://" + httpsAddr)
+		go func() {
+			if err := http.ListenAndServeTLS(httpsAddr, certFile, keyFile, nil); err != nil {
+				slog.Error("HTTPS server failed", "err", err)
+			}
+		}()
 	}
+
+	slog.Info("Server started at http://" + httpAddr)
+	return http.ListenAndServe(httpAddr, nil)
 }
 
 func makeLangHandler(page string) http.HandlerFunc {

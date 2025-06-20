@@ -20,9 +20,12 @@ import (
 
 var (
 	port        string
+	sslPort     string
 	logfile     string
 	certFile    string
 	keyFile     string
+	domain      string
+	email       string
 	Version     = "dev"
 	showVersion bool
 )
@@ -39,7 +42,7 @@ func (p *program) Start(s service.Service) error {
 	go func() {
 		utils.SetupLogging(logfile)
 		go periodicUpdateCheck()
-		err := app.Server(port, certFile, keyFile)
+		err := app.Server(port, sslPort, certFile, keyFile, domain, email)
 		if err != nil {
 			slog.Error("failed to run server", "err", err.Error())
 			os.Exit(1)
@@ -61,12 +64,15 @@ var rootCmd = &cobra.Command{
 		slog.Info("Starting ytc-server",
 			"version", Version,
 			"port", port,
+			"sslPort", sslPort,
 			"logfile", logfile,
 			"certFile", certFile,
 			"keyFile", keyFile,
+			"domain", domain,
+			"email", email,
 		)
 		go periodicUpdateCheck()
-		err := app.Server(port, certFile, keyFile)
+		err := app.Server(port, sslPort, certFile, keyFile, domain, email)
 		if err != nil {
 			slog.Error("failed to run server", "err", err.Error())
 			os.Exit(1)
@@ -75,10 +81,13 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	rootCmd.Flags().StringVarP(&port, "port", "p", "80", "Port to run the server on")
+	rootCmd.Flags().StringVarP(&port, "port", "p", "80", "Port to run the HTTP server on")
+	rootCmd.Flags().StringVar(&sslPort, "ssl-port", "443", "Port to run the HTTPS server on")
 	rootCmd.Flags().StringVar(&logfile, "logfile", "", "Log file path pattern (enables file logging with rotation)")
 	rootCmd.Flags().StringVar(&certFile, "cert", "", "Path to SSL certificate file (enables HTTPS)")
 	rootCmd.Flags().StringVar(&keyFile, "key", "", "Path to SSL key file (enables HTTPS)")
+	rootCmd.Flags().StringVar(&domain, "domain", "", "Domain for automatic SSL certificate generation (requires --email)")
+	rootCmd.Flags().StringVar(&email, "email", "", "Email for Let's Encrypt registration (required for --domain)")
 	rootCmd.Flags().BoolVar(&showVersion, "version", false, "Show version and exit")
 
 	rootCmd.AddCommand(installCmd())
@@ -99,9 +108,12 @@ func installCmd() *cobra.Command {
 			utils.SetupLogging(logfile)
 			slog.Info("Installing ytc-server as a service",
 				"port", port,
+				"sslPort", sslPort,
 				"logfile", logfile,
 				"certFile", certFile,
 				"keyFile", keyFile,
+				"domain", domain,
+				"email", email,
 			)
 			exePath, err := os.Executable()
 			if err != nil {
@@ -109,9 +121,15 @@ func installCmd() *cobra.Command {
 				fmt.Println("Could not determine executable path:", err)
 				os.Exit(1)
 			}
-			argsList := []string{"--port", port, "--logfile", logfile}
+			argsList := []string{"--port", port, "--ssl-port", sslPort, "--logfile", logfile}
 			if certFile != "" && keyFile != "" {
 				argsList = append(argsList, "--cert", certFile, "--key", keyFile)
+			}
+			if domain != "" {
+				argsList = append(argsList, "--domain", domain)
+			}
+			if email != "" {
+				argsList = append(argsList, "--email", email)
 			}
 			svcConfig := &service.Config{
 				Name:        "ytc-server",
