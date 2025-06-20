@@ -12,11 +12,10 @@ import (
 
 const defaultLang = "de"
 
-// loadTemplates initializes the templatesByLang map with parsed templates for each supported language.
 func loadTemplates() {
 	templatesByLang = make(map[string]*template.Template)
 	funcMap := template.FuncMap{
-		"title": strings.Title,
+		"title": func(s string) string { return strings.ToTitle(s) },
 		"dict": func(values ...interface{}) map[string]interface{} {
 			dict := make(map[string]interface{}, len(values)/2)
 			for i := 0; i < len(values)-1; i += 2 {
@@ -28,9 +27,7 @@ func loadTemplates() {
 			}
 			return dict
 		},
-		"safeURL": func(u string) template.URL {
-			return template.URL(u)
-		},
+		"safeURL": func(u string) template.URL { return template.URL(u) },
 	}
 	for _, lang := range supportedLangs {
 		pattern := filepath.Join("static", "templates", lang, "*.html")
@@ -38,7 +35,6 @@ func loadTemplates() {
 	}
 }
 
-// getLang returns the language from the request, or the default if not supported.
 func getLang(r *http.Request) string {
 	lang := r.URL.Query().Get("lang")
 	for _, l := range supportedLangs {
@@ -49,10 +45,9 @@ func getLang(r *http.Request) string {
 	return defaultLang
 }
 
-// parseICalTimeToHuman parses iCal datetime and returns time.Time and a human-readable string.
 func parseICalTimeToHuman(value string) (time.Time, string) {
 	if value == "" {
-		slog.Error("failed to parse ICal Time to Human", "value", value)
+		slog.Error("parseICalTimeToHuman: empty value")
 		return time.Time{}, ""
 	}
 	layouts := []struct {
@@ -64,16 +59,14 @@ func parseICalTimeToHuman(value string) (time.Time, string) {
 		{"20060102", "2.1.2006"},
 	}
 	for _, l := range layouts {
-		t, err := time.Parse(l.layout, value)
-		if err == nil {
+		if t, err := time.Parse(l.layout, value); err == nil {
 			return t, t.Format(l.format)
 		}
 	}
-	slog.Error("failed to parse ICal Time to Human. returning fallback", "value", value)
+	slog.Error("parseICalTimeToHuman: failed to parse", "value", value)
 	return time.Time{}, value
 }
 
-// humanDuration returns a human-readable duration string.
 func humanDuration(d time.Duration) string {
 	if d < 0 {
 		d = -d
@@ -100,13 +93,10 @@ func humanDuration(d time.Duration) string {
 	return "0m"
 }
 
-// splitAndTrim splits a comma-separated string and trims whitespace from each part.
 func splitAndTrim(s string) []string {
-	parts := strings.Split(s, ",")
 	var out []string
-	for _, part := range parts {
-		p := strings.TrimSpace(part)
-		if p != "" {
+	for _, part := range strings.Split(s, ",") {
+		if p := strings.TrimSpace(part); p != "" {
 			out = append(out, p)
 		}
 	}

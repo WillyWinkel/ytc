@@ -21,10 +21,10 @@ var calendarURLs = map[string]string{
 }
 
 var calendarColors = map[string]string{
-	"wochenkurse":      "#0d6efd", // blue
-	"sonderkurse":      "#198754", // green
-	"schnupperstunden": "#ffc107", // yellow
-	"ferienkurse":      "#dc3545", // red
+	"wochenkurse":      "#0d6efd",
+	"sonderkurse":      "#198754",
+	"schnupperstunden": "#ffc107",
+	"ferienkurse":      "#dc3545",
 }
 
 var calendarBtnClasses = map[string]string{
@@ -41,7 +41,7 @@ type CalendarEvent struct {
 	End         string
 	Location    string
 	Duration    string
-	Calendar    string // Add calendar name for color/dot
+	Calendar    string
 }
 
 type TemplateData struct {
@@ -59,24 +59,21 @@ type TemplateData struct {
 func Server() error {
 	loadTemplates()
 	http.HandleFunc("/", calendarHandler)
-	http.HandleFunc("/home", makeLangHandler("home.html")) // <-- added
+	http.HandleFunc("/home", makeLangHandler("home.html"))
 	http.HandleFunc("/about", makeLangHandler("about.html"))
 	http.HandleFunc("/contact", makeLangHandler("contact.html"))
 	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
 	http.HandleFunc("/news", makeLangHandler("news.html"))
 	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("static/images"))))
-	slog.Info("Server brutally started at http://0.0.0.0:8080")
-	err := http.ListenAndServe("0.0.0.0:8080", nil)
-	return err
+	slog.Info("Server started at http://0.0.0.0:8080")
+	return http.ListenAndServe("0.0.0.0:8080", nil)
 }
 
 func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	lang := getLang(r)
 	tmpl := templatesByLang[lang]
-
-	// Parse selected calendars from query
 	calendarParam := r.URL.Query().Get("calendar")
-	var selectedCalendars []string
+	selectedCalendars := make([]string, 0)
 	activeCals := make(map[string]bool)
 	if calendarParam != "" {
 		for _, c := range splitAndTrim(calendarParam) {
@@ -86,7 +83,6 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		// If nothing is selected, select all calendars except "wochenkurse"
 		for cal := range calendarURLs {
 			if cal == "wochenkurse" {
 				continue
@@ -95,7 +91,6 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 			activeCals[cal] = true
 		}
 	}
-	// No default selection if nothing is selected
 
 	type eventWithTime struct {
 		CalendarEvent
@@ -107,17 +102,17 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
 	for _, calName := range selectedCalendars {
-		calendarURL := calendarURLs[calName]
-		calendarURL = strings.Replace(calendarURL, "webcal://", "https://", -1)
+		calendarURL := strings.ReplaceAll(calendarURLs[calName], "webcal://", "https://")
 		cal, err := ical.ParseCalendarFromUrl(calendarURL)
 		if err != nil {
-			slog.Error("failed to parse calendar", "calendar", calName, "err", err.Error())
+			slog.Error("parse calendar", "calendar", calName, "err", err)
 			continue
 		}
 		for _, e := range cal.Events() {
-			var startStr, endStr, summary, description, location string
-			var startTime, endTime time.Time
-
+			var (
+				startStr, endStr, summary, description, location string
+				startTime, endTime                               time.Time
+			)
 			if prop := e.GetProperty(ical.ComponentPropertyDtStart); prop != nil {
 				startTime, startStr = parseICalTimeToHuman(prop.Value)
 			}
@@ -133,13 +128,10 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 			if prop := e.GetProperty(ical.ComponentPropertyLocation); prop != nil {
 				location = prop.Value
 			}
-
 			duration := ""
 			if !startTime.IsZero() && !endTime.IsZero() {
 				duration = humanDuration(endTime.Sub(startTime))
 			}
-
-			// Only add if event is not in the past (endTime >= now)
 			if !endTime.IsZero() && endTime.After(now) {
 				eventsWithTime = append(eventsWithTime, eventWithTime{
 					CalendarEvent: CalendarEvent{
@@ -158,15 +150,13 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Sort by startTime ascending
 	sort.Slice(eventsWithTime, func(i, j int) bool {
 		return eventsWithTime[i].startTime.Before(eventsWithTime[j].startTime)
 	})
 
-	// Extract CalendarEvent slice
-	events := make([]CalendarEvent, 0, len(eventsWithTime))
-	for _, e := range eventsWithTime {
-		events = append(events, e.CalendarEvent)
+	events := make([]CalendarEvent, len(eventsWithTime))
+	for i, e := range eventsWithTime {
+		events[i] = e.CalendarEvent
 	}
 
 	data := TemplateData{
@@ -181,9 +171,8 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 		CalWebcalURLs: calendarURLs,
 	}
 	slog.Debug("renderTemplate", "lang", lang, "page", "calendar.html", "events", len(events))
-	err := tmpl.ExecuteTemplate(w, "calendar.html", data)
-	if err != nil {
-		slog.Error("failed to render template", "err", err.Error())
+	if err := tmpl.ExecuteTemplate(w, "calendar.html", data); err != nil {
+		slog.Error("render template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -193,14 +182,13 @@ func makeLangHandler(page string) http.HandlerFunc {
 		lang := getLang(r)
 		tmpl := templatesByLang[lang]
 		data := TemplateData{
-			Page:          page[:len(page)-5], // e.g., "calendar"
+			Page:          strings.TrimSuffix(page, ".html"),
 			Lang:          lang,
 			CalWebcalURLs: calendarURLs,
 		}
 		slog.Debug("renderTemplate", "lang", lang, "page", page)
-		err := tmpl.ExecuteTemplate(w, page, data)
-		if err != nil {
-			slog.Error("failed to render template", "err", err.Error())
+		if err := tmpl.ExecuteTemplate(w, page, data); err != nil {
+			slog.Error("render template", "err", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
