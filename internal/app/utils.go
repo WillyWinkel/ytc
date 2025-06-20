@@ -6,18 +6,17 @@ import (
 	"log/slog"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
+const defaultLang = "de"
+
+// loadTemplates initializes the templatesByLang map with parsed templates for each supported language.
 func loadTemplates() {
 	templatesByLang = make(map[string]*template.Template)
 	funcMap := template.FuncMap{
-		"title": func(s string) string {
-			if len(s) == 0 {
-				return s
-			}
-			return string([]rune(s)[0]-32) + s[1:]
-		},
+		"title": strings.Title,
 		"dict": func(values ...interface{}) map[string]interface{} {
 			dict := make(map[string]interface{}, len(values)/2)
 			for i := 0; i < len(values)-1; i += 2 {
@@ -29,7 +28,7 @@ func loadTemplates() {
 			}
 			return dict
 		},
-		"safeURL": func(u string) template.URL { // <-- Add this function
+		"safeURL": func(u string) template.URL {
 			return template.URL(u)
 		},
 	}
@@ -39,6 +38,7 @@ func loadTemplates() {
 	}
 }
 
+// getLang returns the language from the request, or the default if not supported.
 func getLang(r *http.Request) string {
 	lang := r.URL.Query().Get("lang")
 	for _, l := range supportedLangs {
@@ -46,10 +46,10 @@ func getLang(r *http.Request) string {
 			return l
 		}
 	}
-	return "de"
+	return defaultLang
 }
 
-// Parses iCal datetime (e.g., 20240609T090000Z or 20240609) and returns time.Time and human-readable string
+// parseICalTimeToHuman parses iCal datetime and returns time.Time and a human-readable string.
 func parseICalTimeToHuman(value string) (time.Time, string) {
 	if value == "" {
 		slog.Error("failed to parse ICal Time to Human", "value", value)
@@ -70,9 +70,10 @@ func parseICalTimeToHuman(value string) (time.Time, string) {
 		}
 	}
 	slog.Error("failed to parse ICal Time to Human. returning fallback", "value", value)
-	return time.Time{}, value // fallback to raw if parsing fails
+	return time.Time{}, value
 }
 
+// humanDuration returns a human-readable duration string.
 func humanDuration(d time.Duration) string {
 	if d < 0 {
 		d = -d
@@ -99,37 +100,15 @@ func humanDuration(d time.Duration) string {
 	return "0m"
 }
 
+// splitAndTrim splits a comma-separated string and trims whitespace from each part.
 func splitAndTrim(s string) []string {
+	parts := strings.Split(s, ",")
 	var out []string
-	for _, part := range splitComma(s) {
-		p := trimSpace(part)
+	for _, part := range parts {
+		p := strings.TrimSpace(part)
 		if p != "" {
 			out = append(out, p)
 		}
 	}
 	return out
-}
-
-func splitComma(s string) []string {
-	var out []string
-	start := 0
-	for i, c := range s {
-		if c == ',' {
-			out = append(out, s[start:i])
-			start = i + 1
-		}
-	}
-	out = append(out, s[start:])
-	return out
-}
-
-func trimSpace(s string) string {
-	i, j := 0, len(s)
-	for i < j && (s[i] == ' ' || s[i] == '\t' || s[i] == '\n') {
-		i++
-	}
-	for j > i && (s[j-1] == ' ' || s[j-1] == '\t' || s[j-1] == '\n') {
-		j--
-	}
-	return s[i:j]
 }
