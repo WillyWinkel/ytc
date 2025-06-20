@@ -52,7 +52,7 @@ jobs:
 
       - name: Get next semantic version
         id: semver
-        uses: paulhatch/semantic-version@v5.4
+        uses: paulhatch/semantic-version@v5.4.0
         with:
           tag_prefix: "v"
           bump_each_commit: true
