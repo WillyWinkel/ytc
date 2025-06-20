@@ -16,7 +16,10 @@ var calendarURLs = map[string]string{
 	"sonderkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfwnZeAR3LQOhWWLb268k4gqa1jhmgoL-XsvLo6wcVXyHeG_di75FEtbP2difn6tV9Y",
 	"schnupperstunden": "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfzT5ZB2ZS9ej1khBvIrOwaOx_Yvn3-WSwh8yMj25fiiKNXTMWQ-y4HQBcjnTGJClXc",
 	"ferienkurse":      "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfw0uWa7nlulHIUfnj6U_loZyYiyTZZaOUxNS2s5lrWQCZTmfIe5Zl__8qw2ZWC1-g0",
-	"news":             "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfymY060CQ5jlmHwPXxtPa5_JOMNfAPXj82_RGF37kIDBcpYXjSkbDii8EnPXk_IVgY",
+}
+
+var newsURLs = map[string]string{
+	"news": "webcal://p177-caldav.icloud.com/published/2/NTY2NDAwNzQ4NTY2NDAwN-KlgK_xXpw8BNa9QCZzsfymY060CQ5jlmHwPXxtPa5_JOMNfAPXj82_RGF37kIDBcpYXjSkbDii8EnPXk_IVgY",
 }
 
 var calendarColors = map[string]string{
@@ -61,6 +64,18 @@ type eventWithTime struct {
 	endTime   time.Time
 }
 
+type DownloadFile struct {
+	Name        string
+	URL         string
+	Description string
+}
+
+type DownloadTemplateData struct {
+	Page  string
+	Lang  string
+	Files []DownloadFile
+}
+
 func Server() error {
 	loadTemplates()
 	http.HandleFunc("/", makeLangHandler("home.html"))
@@ -70,23 +85,11 @@ func Server() error {
 	http.HandleFunc("/calendar", calendarHandler)
 	http.HandleFunc("/taichi", makeLangHandler("taichi.html"))
 	http.HandleFunc("/impressum", makeLangHandler("impressum.html"))
-	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("static/images"))))
+	http.HandleFunc("/download", downloadHandler)
+	http.Handle("/api/images/", http.StripPrefix("/api/images/", http.FileServer(http.Dir("static/images"))))
+	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.Dir("static/downloads"))))
 	slog.Info("Server started at http://0.0.0.0:8080")
 	return http.ListenAndServe("0.0.0.0:8080", nil)
-}
-
-func buildTemplateData(lang, calendarParam string, events []CalendarEvent, activeCals map[string]bool) TemplateData {
-	return TemplateData{
-		Page:          "calendar",
-		Lang:          lang,
-		Events:        events,
-		Calendar:      calendarParam,
-		Calendars:     []string{"wochenkurse", "sonderkurse", "schnupperstunden", "ferienkurse"},
-		CalColors:     calendarColors,
-		ActiveCals:    activeCals,
-		CalBtnClasses: calendarBtnClasses,
-		CalWebcalURLs: calendarURLs,
-	}
 }
 
 func makeLangHandler(page string) http.HandlerFunc {

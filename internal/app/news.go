@@ -22,7 +22,7 @@ func newsHandler(w http.ResponseWriter, r *http.Request) {
 		Page:          "news",
 		Lang:          lang,
 		Events:        events,
-		CalWebcalURLs: calendarURLs,
+		CalWebcalURLs: newsURLs,
 	}
 	slog.Debug("renderTemplate", "lang", lang, "page", "news.html", "events", len(events))
 	if err := tmpl.ExecuteTemplate(w, "news.html", data); err != nil {
@@ -32,7 +32,7 @@ func newsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func fetchNewsEvents() []CalendarEvent {
-	calendarURL, ok := calendarURLs["news"]
+	calendarURL, ok := newsURLs["news"]
 	if !ok {
 		slog.Error("news calendar not found")
 		return nil

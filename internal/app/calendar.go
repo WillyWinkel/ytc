@@ -31,6 +31,20 @@ func calendarHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func buildTemplateData(lang, calendarParam string, events []CalendarEvent, activeCals map[string]bool) TemplateData {
+	return TemplateData{
+		Page:          "calendar",
+		Lang:          lang,
+		Events:        events,
+		Calendar:      calendarParam,
+		Calendars:     []string{"wochenkurse", "sonderkurse", "schnupperstunden", "ferienkurse"},
+		CalColors:     calendarColors,
+		ActiveCals:    activeCals,
+		CalBtnClasses: calendarBtnClasses,
+		CalWebcalURLs: calendarURLs,
+	}
+}
+
 // getSelectedCalendars returns the selected calendar names and a map of active calendars.
 func getSelectedCalendars(calendarParam string) ([]string, map[string]bool) {
 	selectedCalendars := make([]string, 0)
