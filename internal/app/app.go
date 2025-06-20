@@ -86,7 +86,7 @@ type DownloadTemplateData struct {
 	Files []DownloadFile
 }
 
-func Server() error {
+func Server(port string) error {
 	loadTemplates()
 	http.HandleFunc("/", makeLangHandler("home.html"))
 	http.HandleFunc("/home", makeLangHandler("home.html"))
@@ -111,8 +111,9 @@ func Server() error {
 	}
 	http.Handle("/api/downloads/", http.StripPrefix("/api/downloads/", http.FileServer(http.FS(downloadsSub))))
 
-	slog.Info("Server started at http://0.0.0.0:8080")
-	return http.ListenAndServe("0.0.0.0:8080", nil)
+	addr := "0.0.0.0:" + port
+	slog.Info("Server started at http://" + addr)
+	return http.ListenAndServe(addr, nil)
 }
 
 func makeLangHandler(page string) http.HandlerFunc {
