@@ -1,4 +1,61 @@
 {{template "header" .}}
-<h1>Über uns</h1>
-<p>Diese Seite beschreibt das Projekt und seine Ziele.</p>
+<div class="container py-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-12 mb-3 mb-md-0">
+      <div class="bg-light rounded-3 p-3 shadow-sm h-100">
+        <h5 class="mb-3">About us</h5>
+        <ul class="nav flex-column nav-pills">
+          <li class="nav-item"><a class="nav-link active" href="#kontakt">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="#geschichte">History</a></li>
+          <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+          <li class="nav-item"><a class="nav-link" href="#philosophie">Philosophy</a></li>
+          <!-- More navigation items can be added here -->
+        </ul>
+      </div>
+    </nav>
+    <!-- Main content -->
+    <div class="col-md-9">
+      <h1 class="mb-4 d-flex align-items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-universal-access me-3" viewBox="0 0 16 16">
+          <path d="M9.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M6 5.5l-4.535-.442A.531.531 0 0 1 1.531 4H14.47a.531.531 0 0 1 .066 1.058L10 5.5V9l.452 6.42a.535.535 0 0 1-1.053.174L8.243 9.97c-.064-.252-.422-.252-.486 0l-1.156 5.624a.535.535 0 0 1-1.053-.174L6 9z"/>
+        </svg>
+        About us
+      </h1>
+      <section id="kontakt" class="mb-5">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <address>
+              <strong>Yang Tai Chi School Hamburg</strong><br>
+              Stephan Hagen<br>
+              Von-Essen-Straße 56<br>
+              D-22081 Hamburg<br>
+              <abbr title="Phone">Phone:</abbr> <a href="tel:+49405513586">+49 (0)40 / 551 35 86</a> or <a href="tel:+49406951441">+49 (0)40 / 695 14 41</a><br>
+              <abbr title="E-Mail">E-Mail:</abbr> <a href="mailto:info@yang-taichi.com">info@yang-taichi.com</a><br>
+              <abbr title="Whatsapp">Whatsapp:</abbr> <a href="https://wa.me/49406951441">49406951441</a>
+            </address>
+          </div>
+        </div>
+        <div class="alert alert-info mb-3">
+          <strong>Telephone consultation hours:</strong><br>
+          Monday to Thursday from 10:00-12:00 and 15:00-17:00<br>
+          Phone: <a href="tel:+49405513586">+49 (0)40 / 551 35 86</a> or <a href="tel:+49406951441">695 14 41</a>
+        </div>
+        <div class="alert alert-secondary">
+          Please leave a message on the answering machine if necessary.
+        </div>
+      </section>
+      <!-- Space for further sections like History, Team, Philosophy etc. -->
+      <section id="geschichte" class="mb-5">
+        <!-- The history of the school can be added here -->
+      </section>
+      <section id="team" class="mb-5">
+        <!-- The team can be introduced here -->
+      </section>
+      <section id="philosophie" class="mb-5">
+        <!-- The philosophy can be described here -->
+      </section>
+    </div>
+  </div>
+</div>
 {{template "footer"}}

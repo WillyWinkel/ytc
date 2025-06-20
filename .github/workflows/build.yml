@@ -1,10 +1,11 @@
-name: Build and Upload Artifact
+name: Build, Test, and Release
 
 on:
   push:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,3 +32,43 @@ jobs:
         with:
           name: ytc-server
           path: ytc-server
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ytc-server
+
+      - name: Set up Git
+        run: |
+          git fetch --tags
+
+      - name: Get next semantic version
+        id: semver
+        uses: paulhatch/semantic-version@v5
+        with:
+          tag_prefix: "v"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.semver.outputs.version }}
+          name: Release ${{ steps.semver.outputs.version }}
+          body: |
+            Automated release for version ${{ steps.semver.outputs.version }}.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ytc-server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

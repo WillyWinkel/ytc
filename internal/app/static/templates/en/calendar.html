@@ -1,0 +1,94 @@
+{{template "header" .}}
+<div class="container py-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <aside class="col-md-3 col-12 mb-3 mb-md-0">
+      <div class="bg-light rounded-3 p-3 shadow-sm h-100">
+        <h5 class="mb-3">Calendar selection</h5>
+        <form id="calendar-form" method="get">
+          <div class="d-grid gap-2" role="group" aria-label="Calendar selection">
+            {{range $i, $cal := .Calendars}}
+              <div class="d-flex align-items-center mb-2">
+                <button type="button"
+                  class="btn btn-sm flex-grow-1 me-2 w-100 {{if index $.ActiveCals $cal}}btn-{{index $.CalBtnClasses $cal}}{{else}}btn-outline-{{index $.CalBtnClasses $cal}}{{end}}"
+                  style="min-width: 0;"
+                  onclick="toggleCalendar('{{$cal}}')">
+                  {{$cal | title}}
+                </button>
+                <a class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                   href="{{index $.CalWebcalURLs $cal | safeURL}}" rel="noopener" title="Subscribe to calendar">
+                  <i class="bi bi-cloud-download"></i>
+                </a>
+              </div>
+            {{end}}
+          </div>
+          <input type="hidden" name="calendar" id="calendar-input" value="{{.Calendar}}">
+          <input type="hidden" name="lang" value="{{.Lang}}">
+        </form>
+      </div>
+    </aside>
+    <!-- Main content -->
+    <section class="col-md-9">
+      <h1 class="mb-4 d-flex align-items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-calendar me-3" viewBox="0 0 16 16">
+          <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+        </svg>
+        Dates
+      </h1>
+      {{if .Events}}
+      <div class="list-group">
+        {{range $idx, $e := .Events}}
+          <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#event-desc-{{$idx}}" aria-expanded="false" aria-controls="event-desc-{{$idx}}">
+              <span class="calendar-dot me-2" style="background: {{index $.CalColors $e.Calendar}}"></span>
+              <h5 class="mb-0 flex-grow-1">{{$e.Summary}}</h5>
+              <span class="text-muted ms-2">{{ $e.Start }}</span>
+              {{if $e.Duration}}<span class="ms-2 text-muted">({{ $e.Duration }})</span>{{end}}
+            </div>
+            <div id="event-desc-{{$idx}}" class="collapse">
+              <div class="card-body">
+                {{if $e.End}}<p class="mb-1"><strong>End:</strong> {{ $e.End }}</p>{{end}}
+                {{if $e.Location}}<p class="mb-1"><strong>Location:</strong> {{ $e.Location }}</p>{{end}}
+                {{if $e.Description}}<p class="mb-1">{{ $e.Description }}</p>{{else}}<em>No description</em>{{end}}
+              </div>
+            </div>
+          </div>
+        {{end}}
+      </div>
+      {{else}}
+      <div class="alert alert-warning mt-4" role="alert">
+        No dates found.
+      </div>
+      {{end}}
+    </section>
+  </div>
+</div>
+
+<style>
+  .calendar-dot {
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+  /* Ensure all calendar buttons have the same width */
+  .calendar-btn-group .btn {
+    width: 100%;
+    min-width: 120px;
+    box-sizing: border-box;
+  }
+</style>
+<script>
+  let selected = new Set([{{range $i, $cal := .Calendars}}{{if index $.ActiveCals $cal}}{{if $i}},{{end}}"{{$cal}}"{{end}}{{end}}]);
+  function toggleCalendar(cal) {
+    if (selected.has(cal)) {
+      selected.delete(cal);
+    } else {
+      selected.add(cal);
+    }
+    document.getElementById('calendar-input').value = Array.from(selected).join(',');
+    document.getElementById('calendar-form').submit();
+  }
+</script>
+{{template "footer"}}
